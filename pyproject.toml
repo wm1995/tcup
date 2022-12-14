@@ -7,9 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpyro = "^0.10.1"
 arviz = "^0.14.0"
 
+[tool.poetry.group.numpyro.dependencies]
+numpyro = "^0.10.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
