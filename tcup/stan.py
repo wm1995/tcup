@@ -6,7 +6,20 @@ import stan
 from . import stan_models
 
 
-def prep_data(data):
+def _get_model_src(model, prior):
+    if prior is None:
+        if model == "ncup":
+            return pkg_resources.read_text(stan_models, f"{model}.stan")
+        else:
+            prior = "cauchy"
+
+    if model == "ncup":
+        raise ValueError("No choice of prior with ncup model")
+
+    return pkg_resources.read_text(stan_models, f"{model}_{prior}.stan")
+
+
+def _prep_data(data):
     # If nu is not provided, set to -1 to infer as part of model
     shape_param = data.get("nu", -1)
 
@@ -36,10 +49,10 @@ def prep_data(data):
     return stan_data
 
 
-def tcup(data, seed=None, model="tcup", **sampler_kwargs):
-    stan_data = prep_data(data)
+def tcup(data, seed=None, model="tcup", prior=None, **sampler_kwargs):
+    stan_data = _prep_data(data)
 
-    model_src = pkg_resources.read_text(stan_models, f"{model}.stan")
+    model_src = _get_model_src(model, prior)
 
     sampler = stan.build(model_src, stan_data, random_seed=seed)
 
