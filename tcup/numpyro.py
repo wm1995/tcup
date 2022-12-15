@@ -41,8 +41,8 @@ def model(x, y, dx, dy, nu=None):
     y_true = numpyro.deterministic("y", alpha + jnp.dot(beta, x_true) + eps)
 
     # Measure latent x and y values with error
-    numpyro.sample("x_obs", dist.MultivariateNormal(x_true, dx), obs=x)
-    numpyro.sample("y_obs", dist.Normal(y_true, dy), obs=y)
+    numpyro.sample("x_obs", dist.MultivariateStudentT(nu, x_true, dx), obs=x)
+    numpyro.sample("y_obs", dist.StudentT(nu, y_true, dy), obs=y)
 
 
 def tcup(data, seed=None, prior_samples=1000, **sampler_kwargs):
