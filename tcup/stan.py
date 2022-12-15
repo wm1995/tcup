@@ -11,27 +11,25 @@ def prep_data(data):
     shape_param = data.get("nu", -1)
 
     # Extract data shape
-    match data["x_obs"].shape:
+    match data["x"].shape:
         case (N, K):
             stan_data = {
                 "N": N,
                 "K": K,
-                "x": data["x_obs"].tolist(),
-                "dx": data["dx_obs"].tolist(),
-                "y": data["y_obs"].tolist(),
-                "dy": data["dy_obs"].tolist(),
-                "rho": [np.diag(np.ones(x_i.shape)) for x_i in data["x_obs"]],
+                "x": data["x"].tolist(),
+                "dx": data["dx"].tolist(),
+                "y": data["y"].tolist(),
+                "dy": data["dy"].tolist(),
                 "shape_param": shape_param,
             }
         case (N,):
             stan_data = {
                 "N": N,
                 "K": 1,
-                "x": data["x_obs"][:, np.newaxis].tolist(),
-                "dx": data["dx_obs"][:, np.newaxis].tolist(),
-                "y": data["y_obs"].tolist(),
-                "dy": data["dy_obs"].tolist(),
-                "rho": np.ones((N, 1, 1)),
+                "x": data["x"][:, np.newaxis].tolist(),
+                "dx": data["dx"][:, np.newaxis].tolist(),
+                "y": data["y"].tolist(),
+                "dy": data["dy"].tolist(),
                 "shape_param": shape_param,
             }
 

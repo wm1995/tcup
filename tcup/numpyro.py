@@ -16,7 +16,7 @@ def nu_approx(t):
     return jnp.exp(log_nu_approx(t))
 
 
-def model(y_obs, x_obs, dy_obs, dx_obs, nu=None):
+def model(x, y, dx, dy, nu=None):
     # Prior on heavy-tailedness
     if nu is None:
         # nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
@@ -24,25 +24,25 @@ def model(y_obs, x_obs, dy_obs, dx_obs, nu=None):
         nu = numpyro.deterministic("nu", nu_approx(t))
 
     # Latent distribution of true x values
-    x_true = numpyro.sample("x", dist.Normal(), sample_shape=x_obs.shape)
+    x_true = numpyro.sample("x", dist.Normal(), sample_shape=x.shape)
 
     # Priors on regression parameters
     alpha = numpyro.sample("alpha", dist.Normal(0, 3))
     beta = numpyro.sample(
-        "beta", dist.Normal(0, 3), sample_shape=(x_obs.shape[0],)
+        "beta", dist.Normal(0, 3), sample_shape=(x.shape[0],)
     )
     sigma_int = numpyro.sample("sigma_int", dist.Cauchy(0, 5))
     sigma = numpyro.deterministic("sigma", sigma_int)
 
     # Linear regression model
     eps = numpyro.sample(
-        "eps", dist.StudentT(nu, 0, sigma), sample_shape=y_obs.shape
+        "eps", dist.StudentT(nu, 0, sigma), sample_shape=y.shape
     )
     y_true = numpyro.deterministic("y", alpha + jnp.dot(beta, x_true) + eps)
 
     # Measure latent x and y values with error
-    numpyro.sample("x_obs", dist.Normal(x_true, dx_obs), obs=x_obs)
-    numpyro.sample("y_obs", dist.Normal(y_true, dy_obs), obs=y_obs)
+    numpyro.sample("x_obs", dist.MultivariateNormal(x_true, dx), obs=x)
+    numpyro.sample("y_obs", dist.Normal(y_true, dy), obs=y)
 
 
 def tcup(data, seed=None, prior_samples=1000, **sampler_kwargs):

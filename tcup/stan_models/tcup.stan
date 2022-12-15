@@ -11,13 +11,12 @@ functions {
 }
 
 data {
-    int<lower=0> N;                 // Number of data points
-    int<lower=1> K;                 // Number of independent vars
-    array[N] real y;                // Dependent variable
-    array[N] real<lower=0> dy;      // Err. in dependent variable
-    array[N] vector[K] x;           // Independent variables
-    array[N] vector<lower=0>[K] dx; // Err. in independent vars
-    array[N] corr_matrix[K] rho;    // Correlation matrix btwn indep. vars
+    int<lower=0> N;            // Number of data points
+    int<lower=1> K;            // Number of independent vars
+    array[N] real y;           // Dependent variable
+    array[N] real<lower=0> dy; // Err. in dependent variable
+    array[N] vector[K] x;      // Independent variables
+    array[N] cov_matrix[K] dx; // Err. in independent vars
 
     // Shape parameter for Student-t distribution
     // Should be > 0 (or use -1 to add this as a parameter to be learned)
@@ -27,11 +26,6 @@ data {
 transformed data {
     // If True, then learn Student-t shape parameter
     int shape_param_flag = (shape_param == -1);
-    array[N] cov_matrix[K] cov_x;
-
-    for (n in 1:N){
-        cov_x[n] = diag_post_multiply(diag_pre_multiply(dx[n], rho[n]), dx[n]);
-    }
 }
 
 parameters {
@@ -59,7 +53,7 @@ model {
     // Model
     for(n in 1:N){
         true_y[n] ~ student_t(nu, alpha + beta .* true_x[n], sigma);
-        x[n] ~ multi_student_t(nu, true_x[n], cov_x[n]);
+        x[n] ~ multi_student_t(nu, true_x[n], dx[n]);
         y[n] ~ student_t(nu, true_y[n], dy[n]);
     }
 

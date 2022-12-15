@@ -6,18 +6,9 @@ data {
     array[N] real y;                // Dependent variable
     array[N] real<lower=0> dy;      // Err. in dependent variable
     array[N] vector[K] x;           // Independent variables
-    array[N] vector<lower=0>[K] dx; // Err. in independent vars
-    array[N] corr_matrix[K] rho;    // Correlation matrix btwn indep. vars
+    array[N] cov_matrix[K] dx; // Err. in independent vars
 
     real shape_param; // Defined for pipeline compatibility but does nothing
-}
-
-transformed data {
-    array[N] cov_matrix[K] cov_x;
-
-    for (n in 1:N){
-        cov_x[n] = diag_post_multiply(diag_pre_multiply(dx[n], rho[n]), dx[n]);
-    }
 }
 
 parameters {
@@ -35,7 +26,7 @@ model {
     // Model
     for(n in 1:N){
         true_y[n] ~ normal(alpha + beta .* true_x[n], sigma);
-        x[n] ~ multi_normal(true_x[n], cov_x[n]);
+        x[n] ~ multi_normal(true_x[n], dx[n]);
         y[n] ~ normal(true_y[n], dy[n]);
     }
 

@@ -28,7 +28,7 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
 
     # Generate observed values
     x_obs = x_true + sps.norm.rvs(0, dx, size=x_true.shape, random_state=rng)
-    x_err = np.ones(x_obs.shape) * dx
+    x_err = np.array([np.identity(x_i.shape[0]) for x_i in x_obs]) * dx
     y_obs = y_true + sps.norm.rvs(0, dy, size=(N,), random_state=rng)
     y_err = np.ones(N) * dy
 
@@ -37,10 +37,10 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
 
     # Return data dictionaries
     outlier_data = {
-        "x_obs": x_obs,
-        "dx_obs": x_err,
-        "y_obs": y_obs,
-        "dy_obs": y_err,
+        "x": x_obs,
+        "dx": x_err,
+        "y": y_obs,
+        "dy": y_err,
         # "rho": rho.tolist(),
     }
     masked_data = {
