@@ -7,6 +7,9 @@ from . import stan_models
 
 
 def prep_data(data):
+    # If nu is not provided, set to -1 to infer as part of model
+    shape_param = data.get("nu", -1)
+
     # Extract data shape
     match data["x_obs"].shape:
         case (N, K):
@@ -18,6 +21,7 @@ def prep_data(data):
                 "y": data["y_obs"].tolist(),
                 "dy": data["dy_obs"].tolist(),
                 "rho": [np.diag(np.ones(x_i.shape)) for x_i in data["x_obs"]],
+                "shape_param": shape_param,
             }
         case (N,):
             stan_data = {
@@ -28,24 +32,16 @@ def prep_data(data):
                 "y": data["y_obs"].tolist(),
                 "dy": data["dy_obs"].tolist(),
                 "rho": np.ones((N, 1, 1)),
+                "shape_param": shape_param,
             }
 
     return stan_data
 
 
-def prep_tcup_data(data):
+def tcup(data, seed=None, model="tcup", **sampler_kwargs):
     stan_data = prep_data(data)
 
-    # If nu is not provided, set to -1 to infer as part of model
-    stan_data["shape_param"] = data.get("nu", -1)
-
-    return stan_data
-
-
-def tcup(data, seed=None, **sampler_kwargs):
-    stan_data = prep_tcup_data(data)
-
-    model_src = pkg_resources.read_text(stan_models, "tcup.stan")
+    model_src = pkg_resources.read_text(stan_models, f"{model}.stan")
 
     sampler = stan.build(model_src, stan_data, random_seed=seed)
 
@@ -53,19 +49,4 @@ def tcup(data, seed=None, **sampler_kwargs):
     sampler_kwargs.setdefault("num_samples", 1000)
     sampler_kwargs.setdefault("num_chains", 4)
     fit = sampler.sample(**sampler_kwargs)
-    return az.from_pystan(fit)
-
-
-def ncup(data, seed=None, **sampler_kwargs):
-    ncup_data = prep_data(data)
-
-    model = pkg_resources.read_text(stan_models, "ncup.stan")
-
-    sampler = stan.build(model, ncup_data, random_seed=seed)
-
-    sampler_kwargs.setdefault("num_warmup", 1000)
-    sampler_kwargs.setdefault("num_samples", 1000)
-    sampler_kwargs.setdefault("num_chains", 4)
-    fit = sampler.sample(**sampler_kwargs)
-
     return az.from_pystan(fit)

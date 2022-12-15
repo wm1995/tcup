@@ -1,12 +1,9 @@
 import arviz as az
-from tcup.stan import ncup, tcup
+import pytest
+from tcup.stan import tcup
 
 
-def test_ncup(outlier_data):
-    mcmc = ncup(outlier_data)
-    assert isinstance(mcmc, az.InferenceData)
-
-
-def test_tcup(outlier_data):
-    mcmc = tcup(outlier_data)
+@pytest.mark.parametrize("model", ["tcup", "ncup"])
+def test_tcup(outlier_data, model):
+    mcmc = tcup(outlier_data, model=model)
     assert isinstance(mcmc, az.InferenceData)

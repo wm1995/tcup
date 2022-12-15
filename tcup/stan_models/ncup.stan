@@ -8,6 +8,8 @@ data {
     array[N] vector[K] x;           // Independent variables
     array[N] vector<lower=0>[K] dx; // Err. in independent vars
     array[N] corr_matrix[K] rho;    // Correlation matrix btwn indep. vars
+
+    real shape_param; // Defined for pipeline compatibility but does nothing
 }
 
 parameters {
