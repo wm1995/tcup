@@ -27,6 +27,11 @@ data {
 transformed data {
     // If True, then learn Student-t shape parameter
     int shape_param_flag = (shape_param == -1);
+    array[N] cov_matrix[K] cov_x;
+
+    for (n in 1:N){
+        cov_x[n] = diag_post_multiply(diag_pre_multiply(dx[n], rho[n]), dx[n]);
+    }
 }
 
 parameters {
@@ -54,7 +59,7 @@ model {
     // Model
     for(n in 1:N){
         true_y[n] ~ student_t(nu, alpha + beta .* true_x[n], sigma);
-        x[n] ~ student_t(nu, true_x[n], dx[n]);
+        x[n] ~ multi_student_t(nu, true_x[n], cov_x[n]);
         y[n] ~ student_t(nu, true_y[n], dy[n]);
     }
 

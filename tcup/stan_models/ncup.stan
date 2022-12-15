@@ -12,6 +12,14 @@ data {
     real shape_param; // Defined for pipeline compatibility but does nothing
 }
 
+transformed data {
+    array[N] cov_matrix[K] cov_x;
+
+    for (n in 1:N){
+        cov_x[n] = diag_post_multiply(diag_pre_multiply(dx[n], rho[n]), dx[n]);
+    }
+}
+
 parameters {
     // True values:
     array[N] real true_y;  // Transformed y values
@@ -27,7 +35,7 @@ model {
     // Model
     for(n in 1:N){
         true_y[n] ~ normal(alpha + beta .* true_x[n], sigma);
-        x[n] ~ normal(true_x[n], dx[n]);
+        x[n] ~ multi_normal(true_x[n], cov_x[n]);
         y[n] ~ normal(true_y[n], dy[n]);
     }
 
