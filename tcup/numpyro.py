@@ -1,6 +1,7 @@
 import arviz as az
 import jax
 import jax.numpy as jnp
+import numpy as np
 import numpyro
 import numpyro.distributions as dist
 
@@ -15,14 +16,12 @@ def nu_approx(t):
     return jnp.exp(log_nu_approx(t))
 
 
-def model(y_obs, x_obs, dy_obs, dx_obs, shape_param=None):
+def model(y_obs, x_obs, dy_obs, dx_obs, nu=None):
     # Prior on heavy-tailedness
-    if shape_param is None:
+    if nu is None:
         # nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
         t = numpyro.sample("t", dist.Uniform(0, 1))
         nu = numpyro.deterministic("nu", nu_approx(t))
-    else:
-        nu = shape_param
 
     # Latent distribution of true x values
     x_true = numpyro.sample("x", dist.Normal(), sample_shape=x_obs.shape)
@@ -46,10 +45,11 @@ def model(y_obs, x_obs, dy_obs, dx_obs, shape_param=None):
     numpyro.sample("y_obs", dist.Normal(y_true, dy_obs), obs=y_obs)
 
 
-def tcup(data, rng_key=None, prior_samples=1000, **sampler_kwargs):
+def tcup(data, seed=None, prior_samples=1000, **sampler_kwargs):
     # Setup random key
-    if rng_key is None:
-        rng_key = jax.random.PRNGKey(0)
+    if seed is None:
+        seed = np.random.randint(4294967296)
+    rng_key = jax.random.PRNGKey(seed)
 
     # Set up NUTS kernel
     kernel = numpyro.infer.NUTS(model)
