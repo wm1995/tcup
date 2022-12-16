@@ -40,7 +40,7 @@ def _prep_data(data):
                 "N": N,
                 "K": 1,
                 "x": data["x"][:, np.newaxis].tolist(),
-                "dx": data["dx"][:, np.newaxis].tolist(),
+                "dx": data["dx"][:, np.newaxis, np.newaxis].tolist(),
                 "y": data["y"].tolist(),
                 "dy": data["dy"].tolist(),
                 "shape_param": shape_param,
