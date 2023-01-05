@@ -80,8 +80,8 @@ model {
         epsilon_tsfrm[n] ~ std_normal();
         tau_epsilon[n] ~ gamma(half_nu, half_nu);
 
-        x[n] ~ multi_student_t(nu, true_x[n], dx[n]);
-        y[n] ~ student_t(nu, true_y[n], dy[n]);
+        x[n] ~ multi_student_t(nu_, true_x[n], dx[n]);
+        y[n] ~ student_t(nu_, true_y[n], dy[n]);
     }
 
     // Prior
