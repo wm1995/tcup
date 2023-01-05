@@ -13,6 +13,7 @@ def test_tcup(outlier_data, model):
     "prior",
     [
         "invgamma",
+        "invgamma2",
         "cauchy",
         "cauchy_scaled",
         "cauchy_truncated",
@@ -22,6 +23,7 @@ def test_tcup(outlier_data, model):
         "nu2_principled",
         "nu2_heuristic",
         "nu2_scaled",
+        "invnu",
     ],
 )
 def test_priors(outlier_data, prior):
