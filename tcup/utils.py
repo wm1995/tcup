@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 import jax.scipy.special as jspec
+import tensorflow_probability.substrates.jax.math as tfp_math
 
 
 @jax.jit
@@ -24,7 +25,7 @@ def t_cdf(nu, x):
     # Using https://encyclopediaofmath.org/wiki/Student_distribution
     # The above has a source for this in terms of the incomplete Beta function
     # It's only for x > 0 so I modified it to work for all x
-    cdf = jspec.betainc(0.5 * nu, 0.5, nu / (nu + x**2)) - 1
+    cdf = tfp_math.betainc(0.5 * nu, 0.5, nu / (nu + x**2)) - 1
     cdf *= jnp.sign(x)
     return (1 - cdf) / 2
 
@@ -32,4 +33,4 @@ def t_cdf(nu, x):
 @jax.jit
 def outlier_frac(nu):
     OUTLIER_SIGMA = 3
-    return jspec.betainc(0.5 * nu, 0.5, nu / (nu + OUTLIER_SIGMA**2))
+    return tfp_math.betainc(0.5 * nu, 0.5, nu / (nu + OUTLIER_SIGMA**2))
