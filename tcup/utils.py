@@ -10,7 +10,9 @@ def peak_height(nu):
     log_t -= 0.5 * jnp.log(nu)
     log_t += jspec.gammaln((nu + 1) / 2)
     log_t -= jspec.gammaln(nu / 2)
-    return jnp.exp(log_t)
+    t = jnp.where(nu == 0.0, 0.0, jnp.exp(log_t))
+    t = jnp.where(jnp.isinf(nu), 1.0, t)
+    return t
 
 
 @jax.jit
