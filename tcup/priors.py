@@ -40,13 +40,18 @@ def pdf_F18reparam(nu):
     def nu_approx(t):
         a = 4.747
         b = 1.443
-        alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (jnp.abs(t - 1)) ** b)
+        alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (1 - t) ** b)
         alpha += t**2 / jnp.pi
         return 2 * alpha
 
-    t = peak_height(nu)
-    d_nu = jax.grad(nu_approx)
-    return 1 / d_nu(t)
+    @jax.jit
+    def t_approx(nu):
+        t_interp = jnp.linspace(0, 1 - 1e-7, 100000)
+        nu_interp = nu_approx(t_interp)
+        return jnp.interp(nu, nu_interp, t_interp, right=1)
+
+    dt_approx = jax.grad(t_approx)
+    return dt_approx(nu)
 
 
 @jnp.vectorize
