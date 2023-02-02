@@ -1,3 +1,4 @@
+from functools import partial
 import jax
 import jax.numpy as jnp
 import jax.scipy.special as jspec
@@ -32,9 +33,9 @@ def pdf_F18(nu):
     return P_nu / norm
 
 
-@jnp.vectorize
-def pdf_F18reparam(nu):
-    # P(nu) = P(t) dt / d_nu
+@partial(jnp.vectorize, excluded={1})
+def pdf_F18reparam(x, coord):
+    # P(x) = P(t) dt / dx
     # t ~ U(0, 1)
     @jax.jit
     def nu_approx(t):
@@ -45,13 +46,14 @@ def pdf_F18reparam(nu):
         return 2 * alpha
 
     @jax.jit
-    def t_approx(nu):
-        t_interp = jnp.linspace(0, 1 - 1e-7, 100000)
-        nu_interp = nu_approx(t_interp)
-        return jnp.interp(nu, nu_interp, t_interp, right=1)
+    def t_approx(x):
+        t_interp = jnp.linspace(0, 1, 100000)
+        x_interp = coord(nu_approx(t_interp))
+        ind = jnp.argsort(x_interp)
+        return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
 
     dt_approx = jax.grad(t_approx)
-    return dt_approx(nu)
+    return jnp.abs(dt_approx(x))
 
 
 @jnp.vectorize
