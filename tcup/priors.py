@@ -58,18 +58,22 @@ def pdf_F18reparam(nu, coord):
     return jnp.abs(dt_approx(x))
 
 
-@jnp.vectorize
-def pdf_peak_height(nu, nu_min=0.0, nu_max=jnp.inf):
-    # P(nu) = P(t) dt / d_nu
-    # t ~ U(t(nu_min), t(nu_max))
-    norm = 1 / (peak_height(nu_max) - peak_height(nu_min))
-    dt = jax.grad(peak_height)
-    P_nu = jnp.where(
-        jnp.logical_and(nu > nu_min, nu < nu_max),
-        norm * dt(nu),
-        0.0,
-    )
-    return P_nu
+def pdf_peak_height(nu, coord, nu_min=0.0, nu_max=jnp.inf):
+    @partial(jnp.vectorize, excluded={1, 2, 3})
+    def pdf(nu, coord, nu_min, nu_max):
+        # P(nu) = P(t) dt / d_nu
+        # t ~ U(t(nu_min), t(nu_max))
+        norm = 1 / (peak_height(nu_max) - peak_height(nu_min))
+        dt = jax.grad(peak_height)
+        dx = jax.grad(coord)
+        P_nu = jnp.where(
+            jnp.logical_and(nu > nu_min, nu < nu_max),
+            norm * jnp.abs(dt(nu) / dx(nu)),
+            0.0,
+        )
+        return P_nu
+
+    return pdf(nu, coord, nu_min, nu_max)
 
 
 def pdf_inv_nu(nu, coord):
