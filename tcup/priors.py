@@ -72,13 +72,14 @@ def pdf_peak_height(nu, nu_min=0.0, nu_max=jnp.inf):
     return P_nu
 
 
-@jax.jit
-def pdf_inv_nu(nu):
+def pdf_inv_nu(nu, coord):
+    grad_x = jnp.vectorize(jax.grad(coord))
     # P(nu) = P(theta) |dtheta / d_nu|
     # 1/nu = theta ~ U(0, 1)
     # I've already taken the absolute value below
     dtheta = 1 / nu**2
-    return jnp.where(nu >= 1, dtheta, 0.0)
+    P_nu = jnp.where(nu >= 1, dtheta, 0.0) / jnp.abs(grad_x(nu))
+    return P_nu
 
 
 @jnp.vectorize
