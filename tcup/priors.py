@@ -7,30 +7,31 @@ import tensorflow_probability.substrates.jax.distributions as tfp_stats
 from .utils import peak_height
 
 
-@jax.jit
-def pdf_invgamma(nu):
+def pdf_invgamma(nu, coord):
     ALPHA = 3
     BETA = 10
-    return tfp_stats.InverseGamma(ALPHA, BETA).prob(nu)
+    grad_x = jnp.vectorize(jax.grad(coord))
+    return tfp_stats.InverseGamma(ALPHA, BETA).prob(nu) / jnp.abs(grad_x(nu))
 
 
-@jax.jit
-def pdf_invgamma2(nu):
+def pdf_invgamma2(nu, coord):
     ALPHA = 2
     BETA = 6
-    return tfp_stats.InverseGamma(ALPHA, BETA).prob(nu)
+    grad_x = jnp.vectorize(jax.grad(coord))
+    return tfp_stats.InverseGamma(ALPHA, BETA).prob(nu) / jnp.abs(grad_x(nu))
 
 
-@jax.jit
-def pdf_F18(nu):
+def pdf_F18(nu, coord):
     a = 1.2
     nu_0 = 0.55
+    grad_x = jnp.vectorize(jax.grad(coord))
+
     P_nu = ((nu / nu_0) ** (1.0 / 2.0 / a) + (nu / nu_0) ** (2.0 / a)) ** -a
     log_norm = (
         jspec.gammaln(a / 3) + jspec.gammaln(2 * a / 3) - jspec.gammaln(a)
     )
     norm = 2 / 3 * a * nu_0 * jnp.exp(log_norm)
-    return P_nu / norm
+    return P_nu / norm / jnp.abs(grad_x(nu))
 
 
 @partial(jnp.vectorize, excluded={1})
