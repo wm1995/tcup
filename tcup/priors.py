@@ -78,7 +78,19 @@ def pdf_inv_nu(nu, coord):
     # 1/nu = theta ~ U(0, 1)
     # I've already taken the absolute value below
     dtheta = 1 / nu**2
-    P_nu = jnp.where(nu >= 1, dtheta, 0.0) / jnp.abs(grad_x(nu))
+    if coord == peak_height:
+        # The following is a weird hack for peak height only
+        # In the limit where nu is large, we can end up with numerical errors
+        # This leads to the true probability being underestimated
+        # Therefore, let's clip at the limiting value
+        P_nu = jnp.where(
+            nu >= 1,
+            jnp.clip(dtheta / jnp.abs(grad_x(nu)), a_min=4.0),
+            0.0,
+        )
+    else:
+        P_nu = jnp.where(nu >= 1, dtheta, 0.0) / jnp.abs(grad_x(nu))
+
     return P_nu
 
 
