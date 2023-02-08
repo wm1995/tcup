@@ -34,7 +34,7 @@ def pdf_F18(nu):
 
 
 @partial(jnp.vectorize, excluded={1})
-def pdf_F18reparam(x, coord):
+def pdf_F18reparam(nu, coord):
     # P(x) = P(t) dt / dx
     # t ~ U(0, 1)
     @jax.jit
@@ -53,6 +53,7 @@ def pdf_F18reparam(x, coord):
         return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
 
     dt_approx = jax.grad(t_approx)
+    x = coord(nu)
     return jnp.abs(dt_approx(x))
 
 
