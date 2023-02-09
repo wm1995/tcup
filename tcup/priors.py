@@ -7,20 +7,30 @@ import tensorflow_probability.substrates.jax.distributions as tfp_stats
 from .utils import peak_height
 
 
-def nu_approx_to_pdf(nu_approx):
+def nu_approx_to_pdf(nu_approx, nu_min=0.0, nu_max=jnp.inf):
     def pdf(nu, coord):
         # P(x) = P(t) dt / dx
         # t ~ U(0, 1)
         @jax.jit
         def t_approx(x):
-            t_interp = jnp.linspace(0, 1, 100000)
+            t_interp = jnp.linspace(
+                peak_height(nu_min), peak_height(nu_max), 100000
+            )
             x_interp = coord(nu_approx(t_interp))
             ind = jnp.argsort(x_interp)
             return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
 
         dt_approx = jax.grad(t_approx)
         x = coord(nu)
-        return jnp.abs(dt_approx(x))
+        x_min = coord(nu_min)
+        x_max = coord(nu_max)
+        norm = 1 / (t_approx(x_max) - t_approx(x_min))
+        pdf = jnp.where(
+            jnp.logical_and(nu > nu_min, nu < nu_max),
+            norm * jnp.abs(dt_approx(x)),
+            0.0,
+        )
+        return pdf
 
     return jnp.vectorize(pdf, excluded={1})
 
