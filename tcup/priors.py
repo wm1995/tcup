@@ -7,34 +7,6 @@ import tensorflow_probability.substrates.jax.distributions as tfp_stats
 from .utils import peak_height
 
 
-def nu_approx_to_pdf(nu_approx, nu_min=0.0, nu_max=jnp.inf):
-    def pdf(nu, coord):
-        # P(x) = P(t) dt / dx
-        # t ~ U(0, 1)
-        @jax.jit
-        def t_approx(x):
-            t_interp = jnp.linspace(
-                peak_height(nu_min), peak_height(nu_max), 100000
-            )
-            x_interp = coord(nu_approx(t_interp))
-            ind = jnp.argsort(x_interp)
-            return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
-
-        dt_approx = jax.grad(t_approx)
-        x = coord(nu)
-        x_min = coord(nu_min)
-        x_max = coord(nu_max)
-        norm = 1 / (t_approx(x_max) - t_approx(x_min))
-        pdf = jnp.where(
-            jnp.logical_and(nu > nu_min, nu < nu_max),
-            norm * jnp.abs(dt_approx(x)),
-            0.0,
-        )
-        return pdf
-
-    return jnp.vectorize(pdf, excluded={1})
-
-
 def pdf_peak_height(nu, coord, nu_min=0.0, nu_max=jnp.inf):
     @partial(jnp.vectorize, excluded={1, 2, 3})
     def pdf(nu, coord, nu_min, nu_max):
@@ -102,29 +74,53 @@ def pdf_F18(nu, coord):
     return P_nu / norm / jnp.abs(grad_x(nu))
 
 
-@nu_approx_to_pdf
-@jax.jit
-def pdf_F18reparam(t):
-    a = 4.747
-    b = 1.443
-    alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (1 - t) ** b)
-    alpha += t**2 / jnp.pi
-    return 2 * alpha
+@partial(jnp.vectorize, excluded={1})
+def pdf_F18reparam(nu, coord):
+    # P(x) = P(t) dt / dx
+    # t ~ U(0, 1)
+    @jax.jit
+    def nu_approx(t):
+        a = 4.747
+        b = 1.443
+        alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (1 - t) ** b)
+        alpha += t**2 / jnp.pi
+        return 2 * alpha
+
+    @jax.jit
+    def t_approx(x):
+        t_interp = jnp.linspace(0, 1, 100000)
+        x_interp = coord(nu_approx(t_interp))
+        ind = jnp.argsort(x_interp)
+        return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
+
+    dt_approx = jax.grad(t_approx)
+    x = coord(nu)
+    return jnp.abs(dt_approx(x))
 
 
-@partial(nu_approx_to_pdf, nu_min=1.0)
-@jax.jit
-def pdf_cauchy(t):
-    nu_min = 1.0
-    lower = peak_height(nu_min)
-    scaled_t = (t - lower) / (1 - lower)
-    return nu_min / jnp.cos(jnp.pi / 2 * jnp.sqrt(scaled_t))
+@jnp.vectorize
+def pdf_cauchy(nu):
+    # P(nu) = P(t) dt / d_nu
+    # t ~ U(t(nu = 1), 1)
+    @jax.jit
+    def nu_approx(t):
+        return 1 / jnp.cos(jnp.pi / 2 * jnp.sqrt(t))
+
+    t = peak_height(nu)
+    d_nu = jax.grad(nu_approx)
+    P_nu = jnp.where(nu >= 1, 1 / d_nu(t), 0.0)
+    return P_nu
 
 
-@partial(nu_approx_to_pdf, nu_min=2.0)
-@jax.jit
-def pdf_nu2(t):
-    nu_min = 2.0
-    lower = peak_height(nu_min)
-    scaled_t = (t - lower) / (1 - lower)
-    return nu_min / jnp.cos(jnp.pi / 2 * jnp.sqrt(scaled_t))
+@jnp.vectorize
+def pdf_nu2(nu):
+    # P(nu) = P(t) dt / d_nu
+    # t ~ U(t(nu = 2), 1)
+    @jax.jit
+    def nu_approx(t):
+        return 2 / jnp.cos(jnp.pi / 2 * jnp.sqrt(t))
+
+    t = peak_height(nu)
+    d_nu = jax.grad(nu_approx)
+    P_nu = jnp.where(nu >= 2, 1 / d_nu(t), 0.0)
+    return P_nu
