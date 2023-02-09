@@ -92,28 +92,14 @@ def pdf_F18(nu, coord):
     return P_nu / norm / jnp.abs(grad_x(nu))
 
 
-@partial(jnp.vectorize, excluded={1})
-def pdf_F18reparam(nu, coord):
-    # P(x) = P(t) dt / dx
-    # t ~ U(0, 1)
-    @jax.jit
-    def nu_approx(t):
-        a = 4.747
-        b = 1.443
-        alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (1 - t) ** b)
-        alpha += t**2 / jnp.pi
-        return 2 * alpha
-
-    @jax.jit
-    def t_approx(x):
-        t_interp = jnp.linspace(0, 1, 100000)
-        x_interp = coord(nu_approx(t_interp))
-        ind = jnp.argsort(x_interp)
-        return jnp.interp(x, x_interp[ind], t_interp[ind], right=1)
-
-    dt_approx = jax.grad(t_approx)
-    x = coord(nu)
-    return jnp.abs(dt_approx(x))
+@nu_approx_to_pdf
+@jax.jit
+def pdf_F18reparam(t):
+    a = 4.747
+    b = 1.443
+    alpha = (0.125 * t / (1 - t)) * jnp.exp(-a * (1 - t) ** b)
+    alpha += t**2 / jnp.pi
+    return 2 * alpha
 
 
 @jnp.vectorize
