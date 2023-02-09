@@ -112,29 +112,19 @@ def pdf_F18reparam(t):
     return 2 * alpha
 
 
-@jnp.vectorize
-def pdf_cauchy(nu):
-    # P(nu) = P(t) dt / d_nu
-    # t ~ U(t(nu = 1), 1)
-    @jax.jit
-    def nu_approx(t):
-        return 1 / jnp.cos(jnp.pi / 2 * jnp.sqrt(t))
-
-    t = peak_height(nu)
-    d_nu = jax.grad(nu_approx)
-    P_nu = jnp.where(nu >= 1, 1 / d_nu(t), 0.0)
-    return P_nu
+@partial(nu_approx_to_pdf, nu_min=1.0)
+@jax.jit
+def pdf_cauchy(t):
+    nu_min = 1.0
+    lower = peak_height(nu_min)
+    scaled_t = (t - lower) / (1 - lower)
+    return nu_min / jnp.cos(jnp.pi / 2 * jnp.sqrt(scaled_t))
 
 
-@jnp.vectorize
-def pdf_nu2(nu):
-    # P(nu) = P(t) dt / d_nu
-    # t ~ U(t(nu = 2), 1)
-    @jax.jit
-    def nu_approx(t):
-        return 2 / jnp.cos(jnp.pi / 2 * jnp.sqrt(t))
-
-    t = peak_height(nu)
-    d_nu = jax.grad(nu_approx)
-    P_nu = jnp.where(nu >= 2, 1 / d_nu(t), 0.0)
-    return P_nu
+@partial(nu_approx_to_pdf, nu_min=2.0)
+@jax.jit
+def pdf_nu2(t):
+    nu_min = 2.0
+    lower = peak_height(nu_min)
+    scaled_t = (t - lower) / (1 - lower)
+    return nu_min / jnp.cos(jnp.pi / 2 * jnp.sqrt(scaled_t))
