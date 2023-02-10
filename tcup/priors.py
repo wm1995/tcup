@@ -98,23 +98,21 @@ def pdf_F18reparam(nu, coord):
     return jnp.abs(dt_approx(x))
 
 
-@partial(jnp.vectorize, excluded={1})
-def pdf_cauchy(nu, coord):
+@partial(jnp.vectorize, excluded={1, 2})
+def _pdf_cos_approx(nu, coord, nu_min):
     # P(x) = P(t) dt / d_nu d_nu / dx
-    # t ~ U(t(nu = 1), 1)
-    lower = 1
-
+    # t ~ U(t(nu = nu_min), 1)
     @jax.jit
     def t_approx(nu):
-        scaled_t_approx = (2 / jnp.pi * jnp.arccos(lower / nu)) ** 2
-        return (scaled_t_approx - 1) * (1 - peak_height(lower)) + 1
+        scaled_t_approx = (2 / jnp.pi * jnp.arccos(nu_min / nu)) ** 2
+        return (scaled_t_approx - 1) * (1 - peak_height(nu_min)) + 1
 
-    norm = 1 / (t_approx(jnp.inf) - t_approx(lower))
+    norm = 1 / (t_approx(jnp.inf) - t_approx(nu_min))
 
     grad_t_approx = jax.grad(t_approx)
     grad_x = jax.grad(coord)
     prob = norm * jnp.abs(grad_t_approx(nu) / grad_x(nu))
-    prob = jnp.where(nu >= lower, prob, 0.0)
+    prob = jnp.where(nu >= nu_min, prob, 0.0)
 
     # The below is another numerical hack for peak height
     if coord == peak_height:
@@ -122,19 +120,15 @@ def pdf_cauchy(nu, coord):
         # 16 / pi is the limit as calculated by Mathematica
         # The numerical issues kick in for nu > ~1e5
         # Can't clip as before because it increases then decreases again
-        prob = jnp.where(nu < 1e5, prob, lower * 16 / jnp.pi)
+        prob = jnp.where(nu < 1e5, prob, nu_min * 16 / jnp.pi)
     return prob
 
 
-@jnp.vectorize
-def pdf_nu2(nu):
-    # P(nu) = P(t) dt / d_nu
-    # t ~ U(t(nu = 2), 1)
-    @jax.jit
-    def nu_approx(t):
-        return 2 / jnp.cos(jnp.pi / 2 * jnp.sqrt(t))
+def pdf_cauchy(nu, coord):
+    # For this prior, nu_min = 1
+    return _pdf_cos_approx(nu, coord, 1)
 
-    t = peak_height(nu)
-    d_nu = jax.grad(nu_approx)
-    P_nu = jnp.where(nu >= 2, 1 / d_nu(t), 0.0)
-    return P_nu
+
+def pdf_nu2(nu, coord):
+    # For this prior, nu_min = 2
+    return _pdf_cos_approx(nu, coord, 2)
