@@ -27,9 +27,11 @@ def t_cdf(nu, x):
     # Using https://encyclopediaofmath.org/wiki/Student_distribution
     # The above has a source for this in terms of the incomplete Beta function
     # It's only for x > 0 so I modified it to work for all x
-    cdf = tfp_math.betainc(0.5 * nu, 0.5, nu / (nu + x**2)) - 1
-    cdf *= jnp.sign(x)
-    return (1 - cdf) / 2
+    # If x < 0, return integral
+    # If x == 0, return 1/2
+    # If x > 0, return 1 - integral
+    integral = 0.5 * tfp_math.betainc(0.5 * nu, 0.5, nu / (nu + x**2))
+    return (jnp.sign(x) + 1) / 2 - jnp.sign(x) * integral
 
 
 @jax.jit
