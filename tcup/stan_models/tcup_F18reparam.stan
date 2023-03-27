@@ -57,7 +57,7 @@ transformed parameters {
 
     array[N] real epsilon;
     for(n in 1:N){
-        epsilon[n] = sigma * epsilon_tsfrm[n];
+        epsilon[n] = sigma * epsilon_tsfrm[n] / sqrt(tau_epsilon[n]);
         true_y[n] = alpha + dot_product(beta, true_x[n]) + epsilon[n];
     }
 
