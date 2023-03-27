@@ -6,17 +6,11 @@ import stan
 from . import stan_models
 
 
-def _get_model_src(model, prior):
-    if prior is None:
-        if model == "ncup":
-            return pkg_resources.read_text(stan_models, f"{model}.stan")
-        else:
-            prior = "cauchy"
-
-    if model == "ncup":
-        raise ValueError("No choice of prior with ncup model")
-
-    return pkg_resources.read_text(stan_models, f"{model}_{prior}.stan")
+def _get_model_src(model):
+    try:
+        return pkg_resources.read_text(stan_models, f"{model}.stan")
+    except FileNotFoundError:
+        raise NotImplementedError(f"The model `{model}` could not be found.")
 
 
 def _prep_data(data):
@@ -49,10 +43,10 @@ def _prep_data(data):
     return stan_data
 
 
-def tcup(data, seed=None, model="tcup", prior=None, **sampler_kwargs):
+def tcup(data, seed=None, model="tcup", **sampler_kwargs):
     stan_data = _prep_data(data)
 
-    model_src = _get_model_src(model, prior)
+    model_src = _get_model_src(model)
 
     sampler = stan.build(model_src, stan_data, random_seed=seed)
 
