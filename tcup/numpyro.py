@@ -6,22 +6,10 @@ import numpyro
 import numpyro.distributions as dist
 
 
-@jax.jit
-def log_nu_approx(t):
-    return -jnp.log(jnp.cos(jnp.pi / 2 * jnp.sqrt(t)))
-
-
-@jax.jit
-def nu_approx(t):
-    return jnp.exp(log_nu_approx(t))
-
-
 def model(x, y, dx, dy, nu=None):
     # Prior on heavy-tailedness
     if nu is None:
-        # nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
-        t = numpyro.sample("t", dist.Uniform(0, 1))
-        nu = numpyro.deterministic("nu", nu_approx(t))
+        nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
 
     # Latent distribution of true x values
     x_true = numpyro.sample("x", dist.Normal(), sample_shape=x.shape)
