@@ -18,27 +18,28 @@ def _prep_data(data):
     # If nu is not provided, set to -1 to infer as part of model
     shape_param = data.get("nu", -1)
 
+    stan_data = {
+        "y": data["y"].tolist(),
+        "dy": data["dy"].tolist(),
+        "shape_param": shape_param,
+    }
+
     # Extract data shape
     match data["x"].shape:
         case (N, D):
-            stan_data = {
+            stan_data |= {
                 "N": N,
                 "D": D,
                 "x": data["x"].tolist(),
                 "dx": data["dx"].tolist(),
-                "y": data["y"].tolist(),
-                "dy": data["dy"].tolist(),
-                "shape_param": shape_param,
             }
         case (N,):
-            stan_data = {
+            # Need to reshape x data
+            stan_data |= {
                 "N": N,
                 "D": 1,
                 "x": data["x"][:, np.newaxis].tolist(),
                 "dx": data["dx"][:, np.newaxis, np.newaxis].tolist(),
-                "y": data["y"].tolist(),
-                "dy": data["dy"].tolist(),
-                "shape_param": shape_param,
             }
 
     return stan_data
