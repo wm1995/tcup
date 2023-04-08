@@ -4,7 +4,7 @@ import numpy as np
 import stan
 
 from . import stan_models
-from .preprocess import Rescaler
+from .preprocess import Scaler
 
 
 def _get_model_src(model):
@@ -89,7 +89,7 @@ def tcup(data, seed=None, model="tcup", **sampler_kwargs):
     y = data.get("y")
     dy = data.get("dy")
 
-    scaler = Rescaler(x, dx, y, dy)
+    scaler = Scaler(x, dx, y, dy)
 
     scaled_data = data.copy()
     (

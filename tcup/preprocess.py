@@ -2,7 +2,7 @@
 import numpy as np
 
 
-class Rescaler:
+class Scaler:
     def __init__(self, x, dx, y, dy):
         self.x_mean = x.mean(axis=0)
         self.x_std = x.std(axis=0)
