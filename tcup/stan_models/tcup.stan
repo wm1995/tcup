@@ -3,11 +3,11 @@
 
 data {
     int<lower=0> N;            // Number of data points
-    int<lower=1> K;            // Number of independent vars
+    int<lower=1> D;            // Number of independent vars
     array[N] real y;           // Dependent variable
     array[N] real<lower=0> dy; // Err. in dependent variable
-    array[N] vector[K] x;      // Independent variables
-    array[N] cov_matrix[K] dx; // Err. in independent vars
+    array[N] vector[D] x;      // Independent variables
+    array[N] cov_matrix[D] dx; // Err. in independent vars
 
     // Shape parameter for Student's t-distribution
     // Should be > 0 (or use -1 to add this as a parameter to be learned)
@@ -21,11 +21,11 @@ transformed data {
 
 parameters {
     // True values
-    array[N] vector[K] true_x;   // Latent x values
+    array[N] vector[D] true_x;   // Latent x values
 
     // Regression coefficients
     real alpha;                  // Intercept
-    vector[K] beta;              // x coefficients
+    vector[D] beta;              // x coefficients
 
     // Transformed parameters
     // sigma
@@ -71,8 +71,8 @@ model {
 
     // Prior
     alpha ~ normal(0, 3);
-    for(k in 1:K)
-        beta[k] ~ normal(0, 3);
+    for(d in 1:D)
+        beta[d] ~ normal(0, 3);
     nu ~ inv_gamma(3, 10);
     // Equivalent to sigma ~ half_cauchy(0, 1);
     sigma_tsfrm ~ uniform(0, pi() / 2);

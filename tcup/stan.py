@@ -20,10 +20,10 @@ def _prep_data(data):
 
     # Extract data shape
     match data["x"].shape:
-        case (N, K):
+        case (N, D):
             stan_data = {
                 "N": N,
-                "K": K,
+                "D": D,
                 "x": data["x"].tolist(),
                 "dx": data["dx"].tolist(),
                 "y": data["y"].tolist(),
@@ -33,7 +33,7 @@ def _prep_data(data):
         case (N,):
             stan_data = {
                 "N": N,
-                "K": 1,
+                "D": 1,
                 "x": data["x"][:, np.newaxis].tolist(),
                 "dx": data["dx"][:, np.newaxis, np.newaxis].tolist(),
                 "y": data["y"].tolist(),
