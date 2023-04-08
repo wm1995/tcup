@@ -1,5 +1,6 @@
 """Routines for pre-processing the data before fitting."""
 import numpy as np
+from xdgmm import XDGMM
 
 
 class Scaler:
@@ -38,3 +39,21 @@ class Scaler:
         )
         sigma = self.y_std * sigma_scaled
         return alpha, beta, sigma
+
+
+def deconvolve(x, dx, n_components=None, random_state=None):
+    xdgmm = XDGMM(random_state=random_state)
+
+    if n_components is None:
+        _, optimal_n_comp, _ = xdgmm.bic_test(x, dx, range(1, 10))
+        xdgmm.n_components = optimal_n_comp
+    else:
+        xdgmm.n_components = n_components
+
+    xdgmm = xdgmm.fit(x, dx)
+
+    return {
+        "weights": xdgmm.weights,
+        "means": xdgmm.mu,
+        "vars": xdgmm.V,
+    }
