@@ -1,4 +1,4 @@
-// This is a prototype of a parallel model to t-cup using normal distributions
+// n-cup with Gaussian mixture prior
 
 data {
     int<lower=0> N;                 // Number of data points
@@ -9,6 +9,12 @@ data {
     array[N] cov_matrix[D] dx; // Err. in independent vars
 
     real shape_param; // Defined for pipeline compatibility but does nothing
+
+    // Gaussian mixture prior
+    int<lower=1> K;                    // Components
+    simplex[K] theta_mix;              // Mixing proportions
+    array[K] vector[D] mu_mix;         // Locations of mixture components
+    array[K] cov_matrix[D] sigma_mix;  // Scales of mixture components
 }
 
 parameters {
@@ -34,4 +40,14 @@ model {
     for(d in 1:D)
         beta[d] ~ normal(0, 3);
     sigma ~ cauchy(0, 1);
+
+    // Gaussian mixture prior
+    vector[K] log_theta = log(theta_mix);  // cache log calculation
+    for (n in 1:N) {
+        vector[K] lps = log_theta;
+        for (k in 1:K) {
+            lps[k] += multi_normal_lpdf(true_x[n] | mu_mix[k], sigma_mix[k]);
+        }
+        target += log_sum_exp(lps);
+    }
 }

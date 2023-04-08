@@ -4,7 +4,7 @@ import numpy as np
 import stan
 
 from . import stan_models
-from .preprocess import Scaler
+from .preprocess import Scaler, deconvolve
 
 
 def _get_model_src(model):
@@ -14,14 +14,25 @@ def _get_model_src(model):
         raise NotImplementedError(f"The model `{model}` could not be found.")
 
 
-def _prep_data(data):
+def _prep_data(data, seed):
     # If nu is not provided, set to -1 to infer as part of model
     shape_param = data.get("nu", -1)
+
+    x_prior = deconvolve(
+        data["x"],
+        data["dx"],
+        n_components=data.get("K"),
+        random_state=seed,
+    )
 
     stan_data = {
         "y": data["y"].tolist(),
         "dy": data["dy"].tolist(),
         "shape_param": shape_param,
+        "K": x_prior["weights"].shape[0],
+        "theta_mix": x_prior["weights"].tolist(),
+        "mu_mix": x_prior["means"].tolist(),
+        "sigma_mix": x_prior["vars"].tolist(),
     }
 
     # Extract data shape
@@ -100,7 +111,7 @@ def tcup(data, seed=None, model="tcup", **sampler_kwargs):
         scaled_data["dy"],
     ) = scaler.transform(x, dx, y, dy)
 
-    stan_data = _prep_data(scaled_data)
+    stan_data = _prep_data(scaled_data, seed)
 
     model_src = _get_model_src(model)
 

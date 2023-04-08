@@ -1,5 +1,4 @@
-// t-cup
-// Prior: Inverse gamma
+// t-cup with Gaussian mixture prior
 
 data {
     int<lower=0> N;            // Number of data points
@@ -12,6 +11,12 @@ data {
     // Shape parameter for Student's t-distribution
     // Should be > 0 (or use -1 to add this as a parameter to be learned)
     real shape_param;
+
+    // Gaussian mixture prior
+    int<lower=1> K;                    // Components
+    simplex[K] theta_mix;              // Mixing proportions
+    array[K] vector[D] mu_mix;         // Locations of mixture components
+    array[K] cov_matrix[D] sigma_mix;  // Scales of mixture components
 }
 
 transformed data {
@@ -76,4 +81,14 @@ model {
     nu ~ inv_gamma(3, 10);
     // Equivalent to sigma ~ half_cauchy(0, 1);
     sigma_tsfrm ~ uniform(0, pi() / 2);
+
+    // Gaussian mixture prior
+    vector[K] log_theta = log(theta_mix);  // cache log calculation
+    for (n in 1:N) {
+        vector[K] lps = log_theta;
+        for (k in 1:K) {
+            lps[k] += multi_normal_lpdf(true_x[n] | mu_mix[k], sigma_mix[k]);
+        }
+        target += log_sum_exp(lps);
+    }
 }
