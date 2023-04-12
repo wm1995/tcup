@@ -59,3 +59,11 @@ def outlier_frac(nu, outlier_sigma=3):
     omega = jnp.where(nu == 0, 0.0, omega)
     omega = jnp.where(jnp.isinf(nu), normal_outlier_frac, omega)
     return omega
+
+
+# @jax.jit
+def sigma_68(nu):
+    normal_outlier_frac = 1 - jspec.erf(jnp.sqrt(0.5))
+    frac = tfp_math.betaincinv(0.5 * nu, 0.5, normal_outlier_frac)
+    sigma_68 = jnp.sqrt(nu / frac - nu)
+    return sigma_68
