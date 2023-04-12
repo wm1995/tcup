@@ -32,27 +32,14 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
     y_obs = y_true + sps.norm.rvs(0, dy, size=(N,), random_state=rng)
     y_err = np.ones(N) * dy
 
-    # Calculate correlation matrices
-    rho = np.array([np.diag(np.ones(x_i.shape)) for x_i in x_obs])
-
     # Return data dictionaries
     outlier_data = {
         "x": x_obs,
         "cov_x": x_cov,
         "y": y_obs,
         "dy": y_err,
-        # "rho": rho.tolist(),
     }
-    masked_data = {
-        "N": N - 1,
-        "K": x_true.shape[1],
-        "x": x_obs[outlier_mask].tolist(),
-        "cov_x": x_cov[outlier_mask].tolist(),
-        "y": y_obs[outlier_mask].tolist(),
-        "dy": y_err[outlier_mask].tolist(),
-        "rho": rho[outlier_mask].tolist(),
-    }
-    return outlier_data, masked_data
+    return outlier_data
 
 
 @pytest.fixture
@@ -62,7 +49,7 @@ def outlier_data():
 
     # Create data
     x_true = np.linspace(*X_RANGE, N)[:, np.newaxis]
-    outlier_data, _ = gen_data(
+    outlier_data = gen_data(
         rng,
         x_true=x_true,
         dx=OBS_ERR,
