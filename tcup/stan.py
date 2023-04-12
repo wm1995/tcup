@@ -1,4 +1,6 @@
 import importlib.resources as pkg_resources
+import warnings
+
 import arviz as az
 import numpy as np
 import stan
@@ -27,7 +29,12 @@ def _prep_data(data, seed):
         random_state=seed,
     )
 
+    (N, D) = data["x"].shape
     stan_data = {
+        "N": N,
+        "D": D,
+        "x": data["x"].tolist(),
+        "cov_x": data["cov_x"].tolist(),
         "y": data["y"].tolist(),
         "dy": data["dy"].tolist(),
         "shape_param": shape_param,
@@ -36,24 +43,6 @@ def _prep_data(data, seed):
         "mu_mix": x_prior["means"].tolist(),
         "sigma_mix": x_prior["vars"].tolist(),
     }
-
-    # Extract data shape
-    match data["x"].shape:
-        case (N, D):
-            stan_data |= {
-                "N": N,
-                "D": D,
-                "x": data["x"].tolist(),
-                "cov_x": data["cov_x"].tolist(),
-            }
-        case (N,):
-            # Need to reshape x data
-            stan_data |= {
-                "N": N,
-                "D": 1,
-                "x": data["x"][:, np.newaxis].tolist(),
-                "cov_x": data["cov_x"][:, np.newaxis, np.newaxis].tolist(),
-            }
 
     return stan_data
 
@@ -107,14 +96,46 @@ def _reprocess_samples(scaler, fit):
 
 
 def tcup(data, seed=None, model="tcup", **sampler_kwargs):
-    x = data.get("x")
-    cov_x = data.get("cov_x")
-    y = data.get("y")
-    dy = data.get("dy")
+    if "dx" in data:
+        match data["dx"].shape:
+            case (N, D1, D2):
+                warnings.warn(
+                    "`dx` appears to be an array of covariance matrices (and"
+                    "is assumed to be such); to silence this warning, pass as"
+                    "`cov_x` instead.",
+                    UserWarning,
+                )
+                if D1 != D2:
+                    raise ValueError("Covariance matrices are not square")
+                cov_x = data["dx"]
+            case (N, D):
+                cov_x = (
+                    np.array([np.identity(D) for _ in range(N)])
+                    * data["dx"][:, :, np.newaxis]
+                    * data["dx"][:, np.newaxis, :]
+                )
+            case (N,):
+                cov_x = np.ones((N, 1, 1)) * data["dx"].reshape(N, 1, 1) ** 2
+    elif "cov_x" in data:
+        cov_x = data["cov_x"]
+    else:
+        raise ValueError(
+            "Couldn't identify x error data;"
+            "please pass either `dx` or `cov_x`"
+        )
+
+    if data["x"].ndim == 1:
+        x = data["x"][:, np.newaxis]
+    else:
+        x = data["x"]
+
+    y = data["y"]
+    dy = data["dy"]
 
     scaler = Scaler(x, cov_x, y, dy)
 
     scaled_data = data.copy()
+    scaled_data.pop("dx", None)
     (
         scaled_data["x"],
         scaled_data["cov_x"],

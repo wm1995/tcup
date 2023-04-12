@@ -106,9 +106,9 @@ def test_transform_coeff(simple_linear_data):
     # Test backwards transform
     alpha, beta, sigma = scaler.inv_transform_coeff(
         alpha_scaled=coeffs[-1],
-        beta_scaled=coeffs[:-1],
+        beta_scaled=coeffs[:-1, np.newaxis],
         sigma_scaled=residuals.std(),
     )
     assert np.isclose(alpha, ALPHA)
-    assert np.isclose(beta, BETA).all()
+    assert np.isclose(beta.flatten(), BETA).all()
     assert np.isclose(sigma, SIGMA)

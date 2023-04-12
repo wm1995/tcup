@@ -37,7 +37,7 @@ class Scaler:
         return x, cov_x, y, dy
 
     def inv_transform_coeff(self, alpha_scaled, beta_scaled, sigma_scaled):
-        beta = self.y_std * beta_scaled / self.x_std
+        beta = self.y_std * beta_scaled / self.x_std[:, np.newaxis]
         alpha = (
             self.y_mean + self.y_std * alpha_scaled - np.dot(self.x_mean, beta)
         )
