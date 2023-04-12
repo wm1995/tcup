@@ -2,6 +2,8 @@
 import numpy as np
 from xdgmm import XDGMM
 
+from .utils import suppress_output
+
 
 class Scaler:
     def __init__(self, x, dx, y, dy):
@@ -45,7 +47,8 @@ def deconvolve(x, dx, n_components=None, random_state=None):
     xdgmm = XDGMM(random_state=random_state)
 
     if n_components is None:
-        _, optimal_n_comp, _ = xdgmm.bic_test(x, dx, range(1, 10))
+        with suppress_output():
+            _, optimal_n_comp, _ = xdgmm.bic_test(x, dx, range(1, 10))
         xdgmm.n_components = optimal_n_comp
     else:
         xdgmm.n_components = n_components
