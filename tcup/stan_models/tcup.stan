@@ -6,7 +6,7 @@ data {
     array[N] real y;           // Dependent variable
     array[N] real<lower=0> dy; // Err. in dependent variable
     array[N] vector[D] x;      // Independent variables
-    array[N] cov_matrix[D] dx; // Err. in independent vars
+    array[N] cov_matrix[D] cov_x; // Err. in independent vars
 
     // Shape parameter for Student's t-distribution
     // Should be > 0 (or use -1 to add this as a parameter to be learned)
@@ -70,7 +70,7 @@ model {
         epsilon_tsfrm[n] ~ std_normal();
         tau_epsilon[n] ~ gamma(half_nu, half_nu);
 
-        x[n] ~ multi_student_t(nu_, true_x[n], dx[n]);
+        x[n] ~ multi_student_t(nu_, true_x[n], cov_x[n]);
         y[n] ~ student_t(nu_, true_y[n], dy[n]);
     }
 

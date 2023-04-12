@@ -14,15 +14,15 @@ def simple_linear_data():
     x = np.vstack([np.logspace(0, 1, N), np.linspace(-1, -4, N)]).T
     y = ALPHA + np.dot(x, BETA)
 
-    dx = np.identity(dim_x)
+    cov_x = np.identity(dim_x)
     if dim_x > 1:
         for i in range(1, dim_x):
-            dx[i, i - 1] = 0.5
-            dx[i - 1, i] = 0.5
+            cov_x[i, i - 1] = 0.5
+            cov_x[i - 1, i] = 0.5
 
     data = {
         "x": np.vstack([x, x]),
-        "dx": np.broadcast_to(dx, (2 * N, dim_x, dim_x)),
+        "cov_x": np.broadcast_to(cov_x, (2 * N, dim_x, dim_x)),
         "y": np.hstack([y - SIGMA, y + SIGMA]),
         "dy": np.ones(2 * N),
     }
@@ -45,7 +45,7 @@ def test_data_fixture(simple_linear_data):
 def test_scaler(simple_linear_data):
     x = simple_linear_data["x"]
     dim_x = x.shape[1]
-    dx = simple_linear_data["dx"]
+    cov_x = simple_linear_data["cov_x"]
     y = simple_linear_data["y"]
     dy = simple_linear_data["dy"]
     scaler = Scaler(**simple_linear_data)
@@ -62,12 +62,14 @@ def test_scaler(simple_linear_data):
     std_x = x.std(axis=0)
 
     # Check diagonal elements of covariance matrix are scaled correctly
-    assert np.isclose(np.diag(dx_scaled[0]), np.diag(dx[0]) / std_x**2).all()
+    assert np.isclose(
+        np.diag(dx_scaled[0]), np.diag(cov_x[0]) / std_x**2
+    ).all()
     # Check off-diagonal elements are scaled correctly
     if dim_x > 1:
         assert np.isclose(
             np.diag(dx_scaled[0, 1:, :-1]),
-            dx[0, 1:, :-1] / std_x[:-1] / std_x[1:],
+            cov_x[0, 1:, :-1] / std_x[:-1] / std_x[1:],
         ).all()
 
     std_y = y.std(axis=0)
@@ -79,9 +81,9 @@ def test_scaler(simple_linear_data):
 def test_inv_transform(simple_linear_data):
     scaler = Scaler(**simple_linear_data)
     scaled_data = scaler.transform(**simple_linear_data)
-    x, dx, y, dy = scaler.inv_transform(*scaled_data)
+    x, cov_x, y, dy = scaler.inv_transform(*scaled_data)
     assert np.isclose(x, simple_linear_data["x"]).all()
-    assert np.isclose(dx, simple_linear_data["dx"]).all()
+    assert np.isclose(cov_x, simple_linear_data["cov_x"]).all()
     assert np.isclose(y, simple_linear_data["y"]).all()
     assert np.isclose(dy, simple_linear_data["dy"]).all()
 

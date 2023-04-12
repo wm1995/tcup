@@ -28,7 +28,7 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
 
     # Generate observed values
     x_obs = x_true + sps.norm.rvs(0, dx, size=x_true.shape, random_state=rng)
-    x_err = np.array([np.identity(x_i.shape[0]) for x_i in x_obs]) * dx
+    x_cov = np.array([np.identity(x_i.shape[0]) for x_i in x_obs]) * dx**2
     y_obs = y_true + sps.norm.rvs(0, dy, size=(N,), random_state=rng)
     y_err = np.ones(N) * dy
 
@@ -38,7 +38,7 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
     # Return data dictionaries
     outlier_data = {
         "x": x_obs,
-        "dx": x_err,
+        "cov_x": x_cov,
         "y": y_obs,
         "dy": y_err,
         # "rho": rho.tolist(),
@@ -47,7 +47,7 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
         "N": N - 1,
         "K": x_true.shape[1],
         "x": x_obs[outlier_mask].tolist(),
-        "dx": x_err[outlier_mask].tolist(),
+        "cov_x": x_cov[outlier_mask].tolist(),
         "y": y_obs[outlier_mask].tolist(),
         "dy": y_err[outlier_mask].tolist(),
         "rho": rho[outlier_mask].tolist(),

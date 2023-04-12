@@ -22,7 +22,7 @@ def _prep_data(data, seed):
 
     x_prior = deconvolve(
         data["x"],
-        data["dx"],
+        data["cov_x"],
         n_components=data.get("K"),
         random_state=seed,
     )
@@ -44,7 +44,7 @@ def _prep_data(data, seed):
                 "N": N,
                 "D": D,
                 "x": data["x"].tolist(),
-                "dx": data["dx"].tolist(),
+                "cov_x": data["cov_x"].tolist(),
             }
         case (N,):
             # Need to reshape x data
@@ -52,7 +52,7 @@ def _prep_data(data, seed):
                 "N": N,
                 "D": 1,
                 "x": data["x"][:, np.newaxis].tolist(),
-                "dx": data["dx"][:, np.newaxis, np.newaxis].tolist(),
+                "cov_x": data["cov_x"][:, np.newaxis, np.newaxis].tolist(),
             }
 
     return stan_data
@@ -108,19 +108,19 @@ def _reprocess_samples(scaler, fit):
 
 def tcup(data, seed=None, model="tcup", **sampler_kwargs):
     x = data.get("x")
-    dx = data.get("dx")
+    cov_x = data.get("cov_x")
     y = data.get("y")
     dy = data.get("dy")
 
-    scaler = Scaler(x, dx, y, dy)
+    scaler = Scaler(x, cov_x, y, dy)
 
     scaled_data = data.copy()
     (
         scaled_data["x"],
-        scaled_data["dx"],
+        scaled_data["cov_x"],
         scaled_data["y"],
         scaled_data["dy"],
-    ) = scaler.transform(x, dx, y, dy)
+    ) = scaler.transform(x, cov_x, y, dy)
 
     stan_data = _prep_data(scaled_data, seed)
 
