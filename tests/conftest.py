@@ -2,14 +2,6 @@ import numpy as np
 import pytest
 import scipy.stats as sps
 
-# Set up run parameters
-SEED = 24601
-N = 12
-X_RANGE = (0, 10)
-OBS_ERR = 0.2
-OUTLIER = 10
-PARAMS = {"alpha": 3, "beta": [2], "sigma_int": 0.1}
-
 
 def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
     N = x_true.shape[0]
@@ -42,20 +34,33 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
     return outlier_data
 
 
-@pytest.fixture
-def outlier_data():
+@pytest.fixture(
+    params=[
+        {
+            "seed": 24601,
+            "N": 12,
+            "x_range": (0, 10),
+            "obs_err": 0.2,
+            "outlier": 10,
+            "params": {"alpha": 3, "beta": [2], "sigma_int": 0.1},
+        }
+    ]
+)
+def outlier_data(request):
     # Set up random number generator
-    rng = np.random.default_rng(SEED)
+    rng = np.random.default_rng(request.param["seed"])
 
     # Create data
-    x_true = np.linspace(*X_RANGE, N)[:, np.newaxis]
+    x_true = np.linspace(*request.param["x_range"], request.param["N"])[
+        :, np.newaxis
+    ]
     outlier_data = gen_data(
         rng,
         x_true=x_true,
-        dx=OBS_ERR,
-        dy=OBS_ERR,
-        outlier=OUTLIER,
-        **PARAMS,
+        dx=request.param["obs_err"],
+        dy=request.param["obs_err"],
+        outlier=request.param["outlier"],
+        **request.param["params"],
     )
 
     return outlier_data
