@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from tcup.preprocess import Scaler
+from tcup.scale import Scaler
 
 ALPHA = 2
 BETA = [1, -3]

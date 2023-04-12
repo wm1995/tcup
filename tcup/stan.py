@@ -4,7 +4,8 @@ import numpy as np
 import stan
 
 from . import stan_models
-from .preprocess import Scaler, deconvolve
+from .preprocess import deconvolve
+from .scale import Scaler
 
 
 def _get_model_src(model):
