@@ -46,7 +46,7 @@ def gen_data(rng, alpha, beta, sigma_int, x_true, dx, dy, outlier):
         }
     ]
 )
-def outlier_data(request):
+def data(request):
     # Set up random number generator
     rng = np.random.default_rng(request.param["seed"])
 

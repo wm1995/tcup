@@ -7,6 +7,6 @@ config.update("jax_enable_x64", True)
 
 
 @pytest.mark.parametrize("model", ["tcup", "ncup"])
-def test_tcup(outlier_data, model):
-    mcmc = tcup(outlier_data, model=model)
+def test_tcup(data, model):
+    mcmc = tcup(data, model=model)
     assert isinstance(mcmc, az.InferenceData)
