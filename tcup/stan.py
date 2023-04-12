@@ -57,6 +57,23 @@ def _prep_data(data, seed):
     return stan_data
 
 
+def _add_to_fit(fit, var_name, data):
+    D = data.shape[0]
+
+    fit.param_names += (var_name,)
+
+    if D == 1:
+        fit.dims += ([],)
+        fit.constrained_param_names += (var_name,)
+    else:
+        fit.dims += ([D],)
+        fit.constrained_param_names += tuple(
+            f"{var_name}.{i}" for i in range(D)
+        )
+
+    fit._draws = np.append(fit._draws, data, axis=0)
+
+
 def _reprocess_samples(scaler, fit):
     (_, draws, chains) = fit._draws.shape
     alpha_idx = fit._parameter_indexes("alpha")
@@ -72,26 +89,9 @@ def _reprocess_samples(scaler, fit):
         alpha_scaled, beta_scaled, sigma_scaled
     )
 
-    fit.param_names += ("alpha_rescaled",)
-    fit.constrained_param_names += ("alpha_rescaled",)
-    fit.dims += ([],)
-    fit._draws = np.append(fit._draws, alpha.reshape(1, draws, chains), axis=0)
-
-    fit.param_names += ("beta_rescaled",)
-    fit.constrained_param_names += tuple(
-        f"beta_rescaled.{i}" for i in range(dim_x)
-    )
-    fit.dims += ([dim_x],)
-    fit._draws = np.append(
-        fit._draws,
-        beta.reshape(dim_x, draws, chains),
-        axis=0,
-    )
-
-    fit.param_names += ("sigma_rescaled",)
-    fit.constrained_param_names += ("sigma_rescaled",)
-    fit.dims += ([],)
-    fit._draws = np.append(fit._draws, sigma.reshape(1, draws, chains), axis=0)
+    _add_to_fit(fit, "alpha_rescaled", alpha.reshape(1, draws, chains))
+    _add_to_fit(fit, "beta_rescaled", beta.reshape(dim_x, draws, chains))
+    _add_to_fit(fit, "sigma_rescaled", sigma.reshape(1, draws, chains))
 
     return fit
 
