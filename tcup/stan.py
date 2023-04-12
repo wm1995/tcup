@@ -6,6 +6,7 @@ import stan
 from . import stan_models
 from .preprocess import deconvolve
 from .scale import Scaler
+from .utils import sigma_68
 
 
 def _get_model_src(model):
@@ -92,6 +93,15 @@ def _reprocess_samples(scaler, fit):
     _add_to_fit(fit, "alpha_rescaled", alpha.reshape(1, draws, chains))
     _add_to_fit(fit, "beta_rescaled", beta.reshape(dim_x, draws, chains))
     _add_to_fit(fit, "sigma_rescaled", sigma.reshape(1, draws, chains))
+
+    if "nu" in fit.param_names:
+        nu_idx = fit._parameter_indexes("nu")
+        nu = fit._draws[nu_idx, :, :]
+        _add_to_fit(
+            fit,
+            "sigma_68",
+            sigma_68(nu) * sigma.reshape(1, draws, chains),
+        )
 
     return fit
 
