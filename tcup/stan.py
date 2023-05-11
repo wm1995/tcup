@@ -8,7 +8,7 @@ import stan
 from . import stan_models
 from .preprocess import deconvolve
 from .scale import Scaler
-from .utils import sigma_68
+from .utils import outlier_frac, sigma_68
 
 
 def _get_model_src(model):
@@ -90,6 +90,11 @@ def _reprocess_samples(scaler, fit):
             fit,
             "sigma_68",
             sigma_68(nu) * sigma.reshape(1, draws, chains),
+        )
+        _add_to_fit(
+            fit,
+            "outlier_frac",
+            outlier_frac(nu) * sigma.reshape(1, draws, chains),
         )
 
     return fit
