@@ -39,7 +39,7 @@ model {
     alpha ~ normal(0, 3);
     for(d in 1:D)
         beta[d] ~ normal(0, 3);
-    sigma ~ cauchy(0, 1);
+    sigma ~ gamma(2, 2);
 
     // Gaussian mixture prior
     vector[K] log_theta = log(theta_mix);  // cache log calculation

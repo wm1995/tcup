@@ -31,10 +31,8 @@ parameters {
     // Regression coefficients
     real alpha;                  // Intercept
     vector[D] beta;              // x coefficients
+    real<lower=0> sigma;
 
-    // Transformed parameters
-    // sigma
-    real<lower=0, upper=pi()/2> sigma_tsfrm;
     // true_y
     array[N] real epsilon_tsfrm; // Scatter for each datapoint
     array[N] real<lower=0> tau_epsilon; // Scatter for each datapoint
@@ -45,7 +43,6 @@ parameters {
 
 transformed parameters {
     // Transformed parameters
-    real sigma = tan(sigma_tsfrm);
     array[N] real true_y;
 
     array[N] real epsilon;
@@ -79,8 +76,7 @@ model {
     for(d in 1:D)
         beta[d] ~ normal(0, 3);
     nu ~ inv_gamma(3, 10);
-    // Equivalent to sigma ~ half_cauchy(0, 1);
-    sigma_tsfrm ~ uniform(0, pi() / 2);
+    sigma ~ gamma(2, 2);
 
     // Gaussian mixture prior
     vector[K] log_theta = log(theta_mix);  // cache log calculation
