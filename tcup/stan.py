@@ -124,9 +124,26 @@ def tcup(
     dx: Optional[ArrayLike] = None,
     cov_x: Optional[ArrayLike] = None,
     model: str = "tcup",
+    shape_param: Optional[float] = None,
     seed: Optional[int] = None,
     **sampler_kwargs,
 ):
+    if model not in ["tcup", "ncup", "fixed"]:
+        raise NotImplementedError(
+            "Please choose a model from ['tcup', 'ncup', 'fixed']"
+        )
+
+    if model == "fixed":
+        if shape_param is None:
+            raise ValueError(
+                "Shape parameter must be specified for fixed model"
+            )
+        elif shape_param <= 0:
+            raise ValueError("Shape parameter must be a positive real number")
+    else:
+        if shape_param is not None:
+            warnings.warn(f"`shape_param` is ignored for {model} model")
+
     if dx is not None:
         match dx.shape:
             case (N, D1, D2):
@@ -166,6 +183,9 @@ def tcup(
     ) = scaler.transform(x, cov_x, y, dy)
 
     stan_data = _prep_data(scaled_x, scaled_cov_x, scaled_y, scaled_dy, seed)
+
+    if shape_param is not None:
+        stan_data["shape_param"] = shape_param
 
     model_src = _get_model_src(model)
 
