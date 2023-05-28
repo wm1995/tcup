@@ -1,8 +1,10 @@
 import importlib.resources as pkg_resources
+from typing import Optional
 import warnings
 
 import arviz as az
 import numpy as np
+from numpy.typing import ArrayLike
 import stan
 
 from . import stan_models
@@ -19,13 +21,12 @@ def _get_model_src(model):
 
 
 def _prep_data(
-    x_scaled,
-    cov_x_scaled,
-    y_scaled,
-    dy_scaled,
-    seed,
-    shape_param,
-    K,
+    x_scaled: ArrayLike,
+    cov_x_scaled: ArrayLike,
+    y_scaled: ArrayLike,
+    dy_scaled: ArrayLike,
+    seed: int,
+    K: Optional[int],
 ):
     x_prior = deconvolve(
         x_scaled,
@@ -42,7 +43,6 @@ def _prep_data(
         "cov_x": cov_x_scaled.tolist(),
         "y": y_scaled.tolist(),
         "dy": dy_scaled.tolist(),
-        "shape_param": shape_param,
         "K": x_prior["weights"].shape[0],
         "theta_mix": x_prior["weights"].tolist(),
         "mu_mix": x_prior["means"].tolist(),
@@ -52,7 +52,11 @@ def _prep_data(
     return stan_data
 
 
-def _add_to_fit(fit, var_name, data):
+def _add_to_fit(
+    fit: stan.Fit,
+    var_name: str,
+    data: ArrayLike,
+):
     D = data.shape[0]
 
     fit.param_names += (var_name,)
@@ -69,7 +73,10 @@ def _add_to_fit(fit, var_name, data):
     fit._draws = np.append(fit._draws, data, axis=0)
 
 
-def _reprocess_samples(scaler, fit):
+def _reprocess_samples(
+    scaler: Scaler,
+    fit: stan.Fit,
+):
     (_, draws, chains) = fit._draws.shape
     alpha_idx = fit._parameter_indexes("alpha")
     beta_idx = fit._parameter_indexes("beta")
@@ -111,13 +118,13 @@ def _reprocess_samples(scaler, fit):
 
 
 def tcup(
-    x,
-    y,
-    dy,
-    dx=None,
-    cov_x=None,
-    seed=None,
-    model="tcup",
+    x: ArrayLike,
+    y: ArrayLike,
+    dy: ArrayLike,
+    dx: Optional[ArrayLike] = None,
+    cov_x: Optional[ArrayLike] = None,
+    model: str = "tcup",
+    seed: Optional[int] = None,
     **sampler_kwargs,
 ):
     if dx is not None:
