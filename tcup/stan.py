@@ -18,25 +18,30 @@ def _get_model_src(model):
         raise NotImplementedError(f"The model `{model}` could not be found.")
 
 
-def _prep_data(data, seed):
-    # If nu is not provided, set to -1 to infer as part of model
-    shape_param = data.get("nu", -1)
-
+def _prep_data(
+    x_scaled,
+    cov_x_scaled,
+    y_scaled,
+    dy_scaled,
+    seed,
+    shape_param,
+    K,
+):
     x_prior = deconvolve(
-        data["x"],
-        data["cov_x"],
-        n_components=data.get("K"),
+        x_scaled,
+        cov_x_scaled,
+        n_components=K,
         random_state=seed,
     )
 
-    (N, D) = data["x"].shape
+    (N, D) = x_scaled.shape
     stan_data = {
         "N": N,
         "D": D,
-        "x": data["x"].tolist(),
-        "cov_x": data["cov_x"].tolist(),
-        "y": data["y"].tolist(),
-        "dy": data["dy"].tolist(),
+        "x": x_scaled.tolist(),
+        "cov_x": cov_x_scaled.tolist(),
+        "y": y_scaled.tolist(),
+        "dy": dy_scaled.tolist(),
         "shape_param": shape_param,
         "K": x_prior["weights"].shape[0],
         "theta_mix": x_prior["weights"].tolist(),
@@ -79,9 +84,14 @@ def _reprocess_samples(scaler, fit):
         alpha_scaled, beta_scaled, sigma_scaled
     )
 
-    _add_to_fit(fit, "alpha_rescaled", alpha.reshape(1, draws, chains))
-    _add_to_fit(fit, "beta_rescaled", beta.reshape(dim_x, draws, chains))
-    _add_to_fit(fit, "sigma_rescaled", sigma.reshape(1, draws, chains))
+    # Reshape arrays
+    alpha.shape = (1, draws, chains)
+    beta.shape = (dim_x, draws, chains)
+    sigma.shape = (1, draws, chains)
+
+    _add_to_fit(fit, "alpha_rescaled", alpha)
+    _add_to_fit(fit, "beta_rescaled", beta)
+    _add_to_fit(fit, "sigma_rescaled", sigma)
 
     if "nu" in fit.param_names:
         nu_idx = fit._parameter_indexes("nu")
@@ -89,20 +99,29 @@ def _reprocess_samples(scaler, fit):
         _add_to_fit(
             fit,
             "sigma_68",
-            sigma_68(nu) * sigma.reshape(1, draws, chains),
+            sigma_68(nu) * sigma,
         )
         _add_to_fit(
             fit,
             "outlier_frac",
-            outlier_frac(nu) * sigma.reshape(1, draws, chains),
+            outlier_frac(nu),
         )
 
     return fit
 
 
-def tcup(data, seed=None, model="tcup", **sampler_kwargs):
-    if "dx" in data:
-        match data["dx"].shape:
+def tcup(
+    x,
+    y,
+    dy,
+    dx=None,
+    cov_x=None,
+    seed=None,
+    model="tcup",
+    **sampler_kwargs,
+):
+    if dx is not None:
+        match dx.shape:
             case (N, D1, D2):
                 warnings.warn(
                     "`dx` appears to be an array of covariance matrices (and"
@@ -112,43 +131,34 @@ def tcup(data, seed=None, model="tcup", **sampler_kwargs):
                 )
                 if D1 != D2:
                     raise ValueError("Covariance matrices are not square")
-                cov_x = data["dx"]
+                cov_x = dx
             case (N, D):
                 cov_x = (
                     np.array([np.identity(D) for _ in range(N)])
-                    * data["dx"][:, :, np.newaxis]
-                    * data["dx"][:, np.newaxis, :]
+                    * dx[:, :, np.newaxis]
+                    * dx[:, np.newaxis, :]
                 )
             case (N,):
-                cov_x = np.ones((N, 1, 1)) * data["dx"].reshape(N, 1, 1) ** 2
-    elif "cov_x" in data:
-        cov_x = data["cov_x"]
-    else:
+                cov_x = np.ones((N, 1, 1)) * dx.reshape(N, 1, 1) ** 2
+
+    if cov_x is None:
         raise ValueError(
             "Couldn't identify x error data;"
             "please pass either `dx` or `cov_x`"
         )
 
-    if data["x"].ndim == 1:
-        x = data["x"][:, np.newaxis]
-    else:
-        x = data["x"]
-
-    y = data["y"]
-    dy = data["dy"]
-
+    if x.ndim == 1:
+        x = x[:, np.newaxis]
     scaler = Scaler(x, cov_x, y, dy)
 
-    scaled_data = data.copy()
-    scaled_data.pop("dx", None)
     (
-        scaled_data["x"],
-        scaled_data["cov_x"],
-        scaled_data["y"],
-        scaled_data["dy"],
+        scaled_x,
+        scaled_cov_x,
+        scaled_y,
+        scaled_dy,
     ) = scaler.transform(x, cov_x, y, dy)
 
-    stan_data = _prep_data(scaled_data, seed)
+    stan_data = _prep_data(scaled_x, scaled_cov_x, scaled_y, scaled_dy, seed)
 
     model_src = _get_model_src(model)
 
