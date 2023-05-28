@@ -53,7 +53,7 @@ def _prep_data(
 
 
 def _add_to_fit(
-    fit: stan.Fit,
+    fit: stan.fit.Fit,
     var_name: str,
     data: ArrayLike,
 ):
@@ -75,7 +75,7 @@ def _add_to_fit(
 
 def _reprocess_samples(
     scaler: Scaler,
-    fit: stan.Fit,
+    fit: stan.fit.Fit,
 ):
     (_, draws, chains) = fit._draws.shape
     alpha_idx = fit._parameter_indexes("alpha")
