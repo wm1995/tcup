@@ -1,23 +1,26 @@
-import importlib.resources as pkg_resources
 from typing import Optional
 import warnings
 
 import arviz as az
+import jinja2
 import numpy as np
 from numpy.typing import ArrayLike
 import stan
 
-from . import stan_models
 from .preprocess import deconvolve
 from .scale import Scaler
 from .utils import outlier_frac, sigma_68
 
 
-def _get_model_src(model):
-    try:
-        return pkg_resources.read_text(stan_models, f"{model}.stan")
-    except FileNotFoundError:
+def _get_model_src(model, **model_kwargs):
+    if model not in ["tcup", "fixed", "ncup"]:
         raise NotImplementedError(f"The model `{model}` could not be found.")
+
+    loader = jinja2.PackageLoader("tcup", "stan_models")
+    env = jinja2.Environment(loader=loader)
+    template = env.get_template("template.stan")
+    src = template.render(model=model, **model_kwargs)
+    return src
 
 
 def _prep_data(
@@ -39,10 +42,10 @@ def _prep_data(
     stan_data = {
         "N": N,
         "D": D,
-        "x": x_scaled.tolist(),
-        "cov_x": cov_x_scaled.tolist(),
-        "y": y_scaled.tolist(),
-        "dy": dy_scaled.tolist(),
+        "x_scaled": x_scaled.tolist(),
+        "cov_x_scaled": cov_x_scaled.tolist(),
+        "y_scaled": y_scaled.tolist(),
+        "dy_scaled": dy_scaled.tolist(),
         "K": x_prior["weights"].shape[0],
         "theta_mix": x_prior["weights"].tolist(),
         "mu_mix": x_prior["means"].tolist(),
@@ -78,10 +81,10 @@ def _reprocess_samples(
     fit: stan.fit.Fit,
 ):
     (_, draws, chains) = fit._draws.shape
-    alpha_idx = fit._parameter_indexes("alpha")
-    beta_idx = fit._parameter_indexes("beta")
-    sigma_idx = fit._parameter_indexes("sigma")
-    dim_x = fit.dims[fit.param_names.index("beta")][0]
+    alpha_idx = fit._parameter_indexes("alpha_scaled")
+    beta_idx = fit._parameter_indexes("beta_scaled")
+    sigma_idx = fit._parameter_indexes("sigma_scaled")
+    dim_x = fit.dims[fit.param_names.index("beta_scaled")][0]
 
     alpha_scaled = fit._draws[alpha_idx, :, :].reshape(-1)
     beta_scaled = fit._draws[beta_idx, :, :].reshape(dim_x, -1)
@@ -96,9 +99,9 @@ def _reprocess_samples(
     beta.shape = (dim_x, draws, chains)
     sigma.shape = (1, draws, chains)
 
-    _add_to_fit(fit, "alpha_rescaled", alpha)
-    _add_to_fit(fit, "beta_rescaled", beta)
-    _add_to_fit(fit, "sigma_rescaled", sigma)
+    _add_to_fit(fit, "alpha", alpha)
+    _add_to_fit(fit, "beta", beta)
+    _add_to_fit(fit, "sigma", sigma)
 
     if "nu" in fit.param_names:
         nu_idx = fit._parameter_indexes("nu")
