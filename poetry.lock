@@ -811,20 +811,13 @@ files = [
 
 [[package]]
 name = "httpstan"
-version = "4.9.1"
+version = "4.10.1"
 description = "HTTP-based interface to Stan, a package for Bayesian inference."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "httpstan-4.9.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:385040b84e72cd21319be6bf77df5e388142ea96cd883c4341892282a7ecd610"},
-    {file = "httpstan-4.9.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:63edfc05811a4fe0c256981dd7f28e408ff80d3ae394d42b2aa9eebf2ecf3508"},
-    {file = "httpstan-4.9.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:ca93991cb2ff70083246cbd7928e3b425be2bc75b48320d91ccac9ef7ce4aacd"},
-    {file = "httpstan-4.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7bae7c3309182c8476b75e574e306777f8d4d401354215c0a8d0c491ae27f831"},
-    {file = "httpstan-4.9.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:f9fe3f92c2caa27bbf3967dc88d93b43c55bd919104ee98844ef7b4933573ef9"},
-    {file = "httpstan-4.9.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3b41f47ef45d65ec47fe303cbeb1b31b49f31a5deb9a47c2e2c501574145335"},
-    {file = "httpstan-4.9.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:bc403133d47d89dc3cbfcbf9bcbda72b8e47e297b79b407edeb1a659848c44e0"},
-    {file = "httpstan-4.9.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:32faf93870a9f9519b9c678d6e5fa35d392246dfc40f44a41860df2d7010f12c"},
+    {file = "httpstan-4.10.1-cp310-cp310-macosx_13_0_arm64.whl", hash = "sha256:08ed024ce79a60505edb211cb63d86bb7824e985e44fb53054cc4cef531043a3"},
 ]
 
 [package.dependencies]
@@ -834,6 +827,10 @@ marshmallow = ">=3.10,<4.0"
 numpy = ">=1.19,<2.0"
 setuptools = ">=48.0"
 webargs = ">=8.0,<9.0"
+
+[package.source]
+type = "file"
+url = "../../../python-libs/httpstan/dist/httpstan-4.10.1-cp310-cp310-macosx_13_0_arm64.whl"
 
 [[package]]
 name = "idna"
@@ -1726,20 +1723,20 @@ test = ["coverage", "flake8", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pystan"
-version = "3.6.0"
+version = "3.7.0"
 description = "Python interface to Stan, a package for Bayesian inference"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pystan-3.6.0-py3-none-any.whl", hash = "sha256:919302b07f0198fbaaa90067c06712051b9871352e9222385c541dcd4febfa15"},
-    {file = "pystan-3.6.0.tar.gz", hash = "sha256:41f81b7c9fac7b2ef4fcfc3dda4557c70efb532439431f0501b46c346cb6cb98"},
+    {file = "pystan-3.7.0-py3-none-any.whl", hash = "sha256:f032fdd2b7ce1fbfeeb0f4240438cd4349cdeb5ef930d17d4c1330b550077f6d"},
+    {file = "pystan-3.7.0.tar.gz", hash = "sha256:e113321f45d7f74412b0fbd1c2a33e092c9cf52b1ee6c15feb28d53b6803aad7"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.6,<4.0"
 clikit = ">=0.6,<0.7"
-httpstan = ">=4.9,<4.10"
+httpstan = ">=4.10,<4.11"
 numpy = ">=1.19,<2.0"
 pysimdjson = ">=5.0.2,<6.0.0"
 setuptools = "*"
