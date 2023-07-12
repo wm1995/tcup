@@ -2106,9 +2106,9 @@ scipy = "*"
 
 [package.source]
 type = "git"
-url = "https://github.com/wm1995/XDGMM.git"
-reference = "ported"
-resolved_reference = "9d0400675f830dcb44f5977ea9b71f50b2a273e9"
+url = "https://github.com/tholoien/XDGMM.git"
+reference = "HEAD"
+resolved_reference = "70d0fde6bf6dc69861724bd2690bdcecd40b1556"
 
 [[package]]
 name = "yarl"
