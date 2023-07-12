@@ -6,5 +6,5 @@ config.update("jax_enable_x64", True)
 
 
 def test_tcup(data):
-    mcmc = tcup.tcup(data)
+    mcmc = tcup.tcup(**data)
     assert isinstance(mcmc, az.InferenceData)
