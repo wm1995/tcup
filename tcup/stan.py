@@ -29,7 +29,7 @@ def _prep_data(
     y_scaled: ArrayLike,
     dy_scaled: ArrayLike,
     seed: int,
-    K: Optional[int],
+    K: Optional[int] = None,
 ):
     x_prior = deconvolve(
         x_scaled,
