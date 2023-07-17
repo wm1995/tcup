@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tcup"
-version = "0.2.3"
+version = "0.3.0"
 description = ""
 authors = ["William Martin <30499074+wm1995@users.noreply.github.com>"]
 readme = "README.md"
