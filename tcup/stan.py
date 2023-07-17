@@ -188,7 +188,7 @@ def tcup(
     stan_data = _prep_data(scaled_x, scaled_cov_x, scaled_y, scaled_dy, seed)
 
     if shape_param is not None:
-        stan_data["shape_param"] = shape_param
+        stan_data["nu"] = shape_param
 
     model_src = _get_model_src(model)
 
