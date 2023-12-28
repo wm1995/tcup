@@ -129,6 +129,7 @@ def tcup(
     model: str = "tcup",
     shape_param: Optional[float] = None,
     seed: Optional[int] = None,
+    model_kwargs: Optional[dict] = None,
     **sampler_kwargs,
 ):
     if model not in ["tcup", "ncup", "fixed"]:
@@ -146,6 +147,9 @@ def tcup(
     else:
         if shape_param is not None:
             warnings.warn(f"`shape_param` is ignored for {model} model")
+
+    if model_kwargs is None:
+        model_kwargs = {}
 
     if dx is not None:
         match dx.shape:
@@ -190,7 +194,7 @@ def tcup(
     if shape_param is not None:
         stan_data["nu"] = shape_param
 
-    model_src = _get_model_src(model)
+    model_src = _get_model_src(model, **model_kwargs)
 
     sampler = stan.build(model_src, stan_data, random_seed=seed)
 

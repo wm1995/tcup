@@ -1,6 +1,12 @@
 // t-cup with Gaussian mixture prior
 // Jinja2 template
 
+{% if reparam %}
+functions {
+{{ reparam.functions }}
+}
+{% endif %}
+
 data {
     int<lower=0> N;            // Number of data points
     int<lower=1> D;            // Number of independent vars
@@ -27,7 +33,7 @@ parameters {
 
     // Regression coefficients
     real alpha_scaled;                  // Intercept
-    vector[D] beta_scaled;              // x coefficients
+    vector[D] beta_scaled_tsfrm;              // x coefficients
     real<lower=0> sigma_scaled;
 
     // true_y
@@ -41,13 +47,23 @@ parameters {
 
 {% if model == "tcup" %}
     // Distribution parameters
+    {% if reparam %}
+    {{ reparam.params }}
+    {% else %}
     real<lower=0> nu;
+    {% endif %}
 {% endif %}
 }
 
 transformed parameters {
     // Transformed parameters
     array[N] real true_y;
+
+    vector[D] beta_scaled = tan(beta_scaled_tsfrm);
+
+    {% if reparam %}
+    {{ reparam.transformed_params }}
+    {% endif %}
 
 {% if model == "ncup" %}
     for(n in 1:N){
@@ -73,7 +89,11 @@ model {
     }
 {% else %}
     // t-distribution shape parameter
+    {% if reparam %}
+    {{ reparam.half_nu }}
+    {% else %}
     real half_nu = nu / 2;
+    {% endif %}
 
     // Model
     for(n in 1:N){
@@ -89,10 +109,14 @@ model {
     // Prior
     alpha_scaled ~ normal(0, 3);
     for(d in 1:D)
-        beta_scaled[d] ~ normal(0, 3);
+        beta_scaled_tsfrm[d] ~ uniform(-pi() / 2, pi() / 2);
     sigma_scaled ~ {{ sigma_prior | default("gamma(2, 2)") }};
 {% if model == "tcup" %}
+    {% if reparam %}
+    {{ reparam.prior }}
+    {% else %}
     nu ~ {{ nu_prior | default("inv_gamma(3, 10)") }};
+    {% endif %}
 {% endif %}
 
     // Gaussian mixture prior
