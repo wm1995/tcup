@@ -7,11 +7,17 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pystan = "^3.6.0"
 arviz = "^0.14.0"
 tensorflow-probability = {extras = ["jax"], version = "^0.19.0"}
 xdgmm = {git = "https://github.com/tholoien/XDGMM.git"}
 jinja2 = "^3.1.2"
+
+[tool.poetry.group.numpyro.dependencies]
+numpyro = "^0.10.1"
+
+[tool.poetry.group.pystan.dependencies]
+httpstan = "^4.9.0"
+pystan = "^3.6.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
