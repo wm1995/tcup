@@ -18,7 +18,9 @@ def tcup(
 ):
     match backend:
         case "numpyro":
-            return _tcup_numpyro(data, seed, **backend_kwargs)
+            return _tcup_numpyro(
+                x, y, dy, dx, cov_x, seed=seed, **backend_kwargs
+            )
         case "stan":
             return _tcup_stan(x, y, dy, dx, cov_x, seed=seed, **backend_kwargs)
         case _:
