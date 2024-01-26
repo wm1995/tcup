@@ -33,7 +33,7 @@ def xdgmm_prior(
             covariance_matrix=x_prior["vars"][0],
         )
     else:
-        mixing_dist = dist.CategoricalProbs(probs=x_prior["weights"])
+        mixing_dist = dist.CategoricalProbs(jnp.array(x_prior["weights"]))
 
         components = []
         for mu, var in zip(x_prior["means"], x_prior["vars"]):
@@ -44,61 +44,56 @@ def xdgmm_prior(
                 )
             )
 
-        return dist.MixtureSameFamily(
-            mixing_dist,
-            dist.MultivariateNormal(
-                loc=x_prior["means"], covariance_matrix=x_prior["vars"]
-            ),
-        )
         return dist.MixtureGeneral(mixing_dist, components)
 
 
-def tcup_model(
-    x_scaled,
-    y_scaled,
-    cov_x_scaled,
-    dy_scaled,
-    true_x_prior,
-    nu=None,
-    nu_prior=None,
-    sigma_prior=None,
-):
-    # Prior on heavy-tailedness
-    if nu is None:
-        if nu_prior is None:
-            nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
-        else:
-            nu = numpyro.sample("nu", nu_prior)
+def model_builder(true_x_prior):
+    def tcup_model(
+        x_scaled,
+        y_scaled,
+        cov_x_scaled,
+        dy_scaled,
+        nu=None,
+        nu_prior=None,
+        sigma_prior=None,
+    ):
+        # Prior on heavy-tailedness
+        if nu is None:
+            if nu_prior is None:
+                nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
+            else:
+                nu = numpyro.sample("nu", nu_prior)
 
-    # Prior distribution of true x values
-    x_true = numpyro.sample(
-        "x_true", true_x_prior, sample_shape=x_scaled.shape
-    )
+        x_true = numpyro.sample(
+            "x_true", true_x_prior, sample_shape=(x_scaled.shape[0],)
+        )
 
-    # Priors on regression parameters
-    alpha = numpyro.sample("alpha_scaled", dist.Normal(0, 3))
-    beta = numpyro.sample(
-        "beta", dist.Cauchy(0, 1), sample_shape=(x_scaled.shape[1],)
-    )
-    sigma = numpyro.sample("sigma_scaled", dist.Gamma(2, 2))
+        # Priors on regression parameters
+        alpha = numpyro.sample("alpha_scaled", dist.Normal(0, 3))
+        beta = numpyro.sample(
+            "beta", dist.Cauchy(0, 1), sample_shape=(x_scaled.shape[1],)
+        )
+        sigma = numpyro.sample("sigma_scaled", dist.Gamma(2, 2))
 
-    # Linear regression model
-    epsilon = numpyro.sample(
-        "epsilon", dist.StudentT(nu, 0, sigma), sample_shape=y_scaled.shape
-    )
-    y_true = numpyro.deterministic(
-        "y_true", alpha + jnp.dot(beta, x_true) + epsilon
-    )
+        # Linear regression model
+        epsilon = numpyro.sample(
+            "epsilon", dist.StudentT(nu, 0, sigma), sample_shape=y_scaled.shape
+        )
+        y_true = numpyro.deterministic(
+            "y_true", alpha + jnp.dot(x_true, beta) + epsilon
+        )
 
-    # Measure latent x and y values with error
-    numpyro.sample(
-        "x_scaled",
-        dist.MultivariateStudentT(nu, x_true, cov_x_scaled),
-        obs=x_scaled,
-    )
-    numpyro.sample(
-        "y_scaled", dist.StudentT(nu, y_true, dy_scaled), obs=y_scaled
-    )
+        # Measure latent x and y values with error
+        numpyro.sample(
+            "x_scaled",
+            dist.MultivariateStudentT(nu, x_true, cov_x_scaled),
+            obs=x_scaled,
+        )
+        numpyro.sample(
+            "y_scaled", dist.StudentT(nu, y_true, dy_scaled), obs=y_scaled
+        )
+
+    return tcup_model
 
 
 def tcup(
@@ -172,6 +167,7 @@ def tcup(
     ) = scaler.transform(x, cov_x, y, dy)
 
     x_true_prior = xdgmm_prior(scaled_x, scaled_cov_x, seed)
+    tcup_model = model_builder(x_true_prior)
 
     # Setup random key
     if seed is None:
@@ -196,7 +192,6 @@ def tcup(
         y_scaled=scaled_y,
         cov_x_scaled=scaled_cov_x,
         dy_scaled=scaled_dy,
-        true_x_prior=x_true_prior,
         extra_fields=["num_steps", "energy"],
     )
     samples = mcmc.get_samples()
@@ -209,7 +204,6 @@ def tcup(
         y_scaled=scaled_y,
         cov_x_scaled=scaled_cov_x,
         dy_scaled=scaled_dy,
-        true_x_prior=x_true_prior,
     )
 
     # Sample prior
@@ -220,7 +214,6 @@ def tcup(
         y_scaled=scaled_y,
         cov_x_scaled=scaled_cov_x,
         dy_scaled=scaled_dy,
-        true_x_prior=x_true_prior,
     )
 
     # Combine results into ArviZ InferenceData object
