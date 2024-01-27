@@ -42,23 +42,30 @@ def xdgmm_prior(
         )
 
 
+def model_builder(
+    true_x_prior: dist.Distribution,
+    nu_prior: Optional[dist.Distribution] = None,
+    sigma_prior: Optional[dist.Distribution] = None,
+):
+    # Set a default prior for nu
+    if nu_prior is None:
+        nu_prior = dist.InverseGamma(3, 10)
 
-def model_builder(true_x_prior):
-    def tcup_model(
+    # Set a default prior for sigma
+    if sigma_prior is None:
+        sigma_prior = dist.Gamma(2, 2)
+
+    # Define model
+    def model(
         x_scaled,
         y_scaled,
         cov_x_scaled,
         dy_scaled,
         nu=None,
-        nu_prior=None,
-        sigma_prior=None,
     ):
         # Prior on heavy-tailedness
         if nu is None:
-            if nu_prior is None:
-                nu = numpyro.sample("nu", dist.InverseGamma(3, 10))
-            else:
-                nu = numpyro.sample("nu", nu_prior)
+            nu = numpyro.sample("nu", nu_prior)
 
         x_true = numpyro.sample(
             "x_true", true_x_prior, sample_shape=(x_scaled.shape[0],)
@@ -69,7 +76,7 @@ def model_builder(true_x_prior):
         beta = numpyro.sample(
             "beta", dist.Cauchy(0, 1), sample_shape=(x_scaled.shape[1],)
         )
-        sigma = numpyro.sample("sigma_scaled", dist.Gamma(2, 2))
+        sigma = numpyro.sample("sigma_scaled", sigma_prior)
 
         # Linear regression model
         epsilon = numpyro.sample(
@@ -89,7 +96,7 @@ def model_builder(true_x_prior):
             "y_scaled", dist.StudentT(nu, y_true, dy_scaled), obs=y_scaled
         )
 
-    return tcup_model
+    return model
 
 
 def tcup(
