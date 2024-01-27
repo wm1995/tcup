@@ -33,18 +33,14 @@ def xdgmm_prior(
             covariance_matrix=x_prior["vars"][0],
         )
     else:
-        mixing_dist = dist.CategoricalProbs(jnp.array(x_prior["weights"]))
+        return dist.MixtureSameFamily(
+            dist.CategoricalProbs(x_prior["weights"]),
+            dist.MultivariateNormal(
+                loc=x_prior["means"],
+                covariance_matrix=x_prior["vars"],
+            ),
+        )
 
-        components = []
-        for mu, var in zip(x_prior["means"], x_prior["vars"]):
-            components.append(
-                dist.MultivariateNormal(
-                    loc=mu,
-                    covariance_matrix=var,
-                )
-            )
-
-        return dist.MixtureGeneral(mixing_dist, components)
 
 
 def model_builder(true_x_prior):
