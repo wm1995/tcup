@@ -8,10 +8,29 @@ import numpy as np
 from numpy.typing import ArrayLike
 import numpyro
 import numpyro.distributions as dist
+from numpyro.distributions import constraints
+from numpyro.distributions.transforms import (
+    ParameterFreeTransform,
+)
+from numpyro.infer.reparam import TransformReparam
+
 
 from .preprocess import deconvolve
 from .scale import Scaler
 from .utils import outlier_frac, sigma_68
+
+
+class TanTransform(ParameterFreeTransform):
+    codomain = constraints.real
+
+    def __call__(self, x):
+        return jnp.tan(x)
+
+    def _inverse(self, y):
+        return jnp.arctan(y)
+
+    def log_abs_det_jacobian(self, x, y, intermediates=None):
+        return 2 * jnp.log(jnp.sec(x))
 
 
 def xdgmm_prior(
@@ -73,9 +92,18 @@ def model_builder(
 
         # Priors on regression parameters
         alpha = numpyro.sample("alpha_scaled", dist.Normal(0, 3))
-        beta = numpyro.sample(
-            "beta", dist.Cauchy(0, 1), sample_shape=(x_scaled.shape[1],)
-        )
+        reparam_config = {"beta_scaled": TransformReparam()}
+        with numpyro.handlers.reparam(config=reparam_config):
+            beta = numpyro.sample(
+                "beta_scaled",
+                dist.TransformedDistribution(
+                    dist.Uniform(
+                        -jnp.pi / 2 * jnp.ones(x_scaled.shape[1]),
+                        jnp.pi / 2 * jnp.ones(x_scaled.shape[1]),
+                    ),
+                    TanTransform(),
+                ),
+            )
         sigma = numpyro.sample("sigma_scaled", sigma_prior)
 
         # Linear regression model
