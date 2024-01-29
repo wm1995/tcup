@@ -94,6 +94,10 @@ def _reprocess_samples(
         alpha_scaled, beta_scaled, sigma_scaled
     )
 
+    alpha = np.array(alpha)
+    beta = np.array(beta)
+    sigma = np.array(sigma)
+
     # Reshape arrays
     alpha.shape = (1, draws, chains)
     beta.shape = (dim_x, draws, chains)

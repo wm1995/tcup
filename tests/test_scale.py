@@ -3,7 +3,7 @@ import pytest
 from tcup.scale import Scaler
 
 ALPHA = 2
-BETA = [1, -3]
+BETA = np.array([1, -3])
 SIGMA = 0.5
 
 

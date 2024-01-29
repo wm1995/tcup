@@ -1,4 +1,4 @@
-import numpy as np
+import jax.numpy as jnp
 
 
 class Scaler:
@@ -11,7 +11,7 @@ class Scaler:
     def transform(self, x, cov_x, y, dy):
         x_scaled = (x - self.x_mean) / self.x_std
         cov_x_scaled = (
-            cov_x / self.x_std[:, np.newaxis] / self.x_std[np.newaxis, :]
+            cov_x / self.x_std[:, jnp.newaxis] / self.x_std[jnp.newaxis, :]
         )
         y_scaled = (y - self.y_mean) / self.y_std
         dy_scaled = dy / self.y_std
@@ -19,7 +19,7 @@ class Scaler:
 
     def transform_coeff(self, alpha, beta, sigma):
         alpha_scaled = (
-            (alpha - self.y_mean) + np.dot(beta, self.x_mean)
+            (alpha - self.y_mean) + jnp.dot(beta, self.x_mean)
         ) / self.y_std
         beta_scaled = beta * self.x_std / self.y_std
         sigma_scaled = sigma / self.y_std
@@ -29,17 +29,19 @@ class Scaler:
         x = x_scaled * self.x_std + self.x_mean
         cov_x = (
             cov_x_scaled
-            * self.x_std[:, np.newaxis]
-            * self.x_std[np.newaxis, :]
+            * self.x_std[:, jnp.newaxis]
+            * self.x_std[jnp.newaxis, :]
         )
         y = y_scaled * self.y_std + self.y_mean
         dy = dy_scaled * self.y_std
         return x, cov_x, y, dy
 
     def inv_transform_coeff(self, alpha_scaled, beta_scaled, sigma_scaled):
-        beta = self.y_std * beta_scaled / self.x_std[:, np.newaxis]
+        beta = self.y_std * beta_scaled / self.x_std[:, jnp.newaxis]
         alpha = (
-            self.y_mean + self.y_std * alpha_scaled - np.dot(self.x_mean, beta)
+            self.y_mean
+            + self.y_std * alpha_scaled
+            - jnp.dot(self.x_mean, beta)
         )
         sigma = self.y_std * sigma_scaled
         return alpha, beta, sigma
