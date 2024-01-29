@@ -66,6 +66,7 @@ def model_builder(
     true_x_prior: dist.Distribution,
     nu_prior: Optional[dist.Distribution] = None,
     sigma_prior: Optional[dist.Distribution] = None,
+    scaler=None,
 ):
     # Set a default prior for nu
     if nu_prior is None:
@@ -106,6 +107,18 @@ def model_builder(
                 ),
             )
         sigma = numpyro.sample("sigma_scaled", sigma_prior)
+
+        if scaler is not None:
+            unscaled = scaler.inv_transform_coeff(
+                alpha, beta[:, jnp.newaxis], sigma
+            )
+            numpyro.deterministic("alpha", unscaled[0].reshape(alpha.shape))
+            numpyro.deterministic("beta", unscaled[1].reshape(beta.shape))
+            numpyro.deterministic("sigma", unscaled[2])
+            numpyro.deterministic("sigma_68", sigma_68(nu) * unscaled[2])
+        else:
+            numpyro.deterministic("sigma_68", sigma_68(nu) * sigma)
+        numpyro.deterministic("outlier_frac", outlier_frac(nu))
 
         # Linear regression model
         reparam_config = {"y_true": TransformReparam()}
@@ -209,7 +222,7 @@ def tcup(
     ) = scaler.transform(x, cov_x, y, dy)
 
     x_true_prior = xdgmm_prior(scaled_x, scaled_cov_x, seed)
-    tcup_model = model_builder(x_true_prior)
+    tcup_model = model_builder(x_true_prior, scaler=scaler)
 
     # Setup random key
     if seed is None:
