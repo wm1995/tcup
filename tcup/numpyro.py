@@ -11,6 +11,7 @@ import numpyro.distributions as dist
 from numpyro.distributions import constraints
 from numpyro.distributions.transforms import (
     ParameterFreeTransform,
+    AffineTransform,
 )
 from numpyro.infer.reparam import TransformReparam
 
@@ -107,12 +108,22 @@ def model_builder(
         sigma = numpyro.sample("sigma_scaled", sigma_prior)
 
         # Linear regression model
-        epsilon = numpyro.sample(
-            "epsilon", dist.StudentT(nu, 0, sigma), sample_shape=y_scaled.shape
-        )
-        y_true = numpyro.deterministic(
-            "y_true", alpha + jnp.dot(x_true, beta) + epsilon
-        )
+        reparam_config = {"y_true": TransformReparam()}
+        with numpyro.handlers.reparam(config=reparam_config):
+            tau = numpyro.sample(
+                "tau",
+                dist.Gamma(nu / 2, nu / 2),
+                sample_shape=y_scaled.shape,
+            )
+            y_loc = alpha + jnp.dot(x_true, beta)
+            y_scale = sigma * jnp.power(tau, -0.5)
+            y_true = numpyro.sample(
+                "y_true",
+                dist.TransformedDistribution(
+                    dist.Normal(0, 1),
+                    AffineTransform(y_loc, y_scale),
+                ),
+            )
 
         # Measure latent x and y values with error
         numpyro.sample(
