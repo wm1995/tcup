@@ -93,9 +93,18 @@ def model_builder(
         )
 
         # Priors on regression parameters
-        alpha = numpyro.sample("alpha_scaled", dist.Normal(0, 3))
-        reparam_config = {"beta_scaled": TransformReparam()}
+        reparam_config = {
+            "alpha_scaled": TransformReparam(),
+            "beta_scaled": TransformReparam(),
+        }
         with numpyro.handlers.reparam(config=reparam_config):
+            alpha = numpyro.sample(
+                "alpha_scaled",
+                dist.TransformedDistribution(
+                    dist.Normal(0, 1),
+                    AffineTransform(0, 3),
+                ),
+            )
             beta = numpyro.sample(
                 "beta_scaled",
                 dist.TransformedDistribution(
