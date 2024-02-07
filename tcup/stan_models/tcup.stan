@@ -67,8 +67,8 @@ model {
         epsilon_tsfrm[n] ~ std_normal();
         tau_epsilon[n] ~ gamma(half_nu, half_nu);
 
-        x[n] ~ multi_student_t(nu_, true_x[n], cov_x[n]);
-        y[n] ~ student_t(nu_, true_y[n], dy[n]);
+        x[n] ~ multi_normal(true_x[n], cov_x[n]);
+        y[n] ~ normal(true_y[n], dy[n]);
     }
 
     // Prior

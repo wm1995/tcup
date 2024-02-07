@@ -84,8 +84,6 @@ model {
     // Model
     for(n in 1:N){
         epsilon[n] ~ std_normal();
-        x_scaled[n] ~ multi_normal(true_x[n], cov_x_scaled[n]);
-        y_scaled[n] ~ normal(true_y[n], dy_scaled[n]);
     }
 {% else %}
     // t-distribution shape parameter
@@ -100,11 +98,13 @@ model {
         // Equivalent to true_y ~ student_t(nu, alpha_scaled + beta_scaled . true_x[n], sigma_scaled);
         epsilon_tsfrm[n] ~ std_normal();
         tau_epsilon[n] ~ gamma(half_nu, half_nu);
-
-        x_scaled[n] ~ multi_student_t(nu, true_x[n], cov_x_scaled[n]);
-        y_scaled[n] ~ student_t(nu, true_y[n], dy_scaled[n]);
     }
 {% endif %}
+    // Model
+    for(n in 1:N){
+        x_scaled[n] ~ multi_normal(true_x[n], cov_x_scaled[n]);
+        y_scaled[n] ~ normal(true_y[n], dy_scaled[n]);
+    }
 
     // Prior
     alpha_scaled ~ normal(0, 3);
