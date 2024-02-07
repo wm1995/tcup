@@ -150,11 +150,11 @@ def model_builder(
         # Measure latent x and y values with error
         numpyro.sample(
             "x_scaled",
-            dist.MultivariateStudentT(nu, x_true, cov_x_scaled),
+            dist.MultivariateNormal(x_true, cov_x_scaled),
             obs=x_scaled,
         )
         numpyro.sample(
-            "y_scaled", dist.StudentT(nu, y_true, dy_scaled), obs=y_scaled
+            "y_scaled", dist.Normal(y_true, dy_scaled), obs=y_scaled
         )
 
     return model
