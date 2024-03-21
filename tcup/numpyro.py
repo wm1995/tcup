@@ -108,11 +108,11 @@ def model_builder(
             beta = numpyro.sample(
                 "beta_scaled",
                 dist.TransformedDistribution(
-                    dist.Uniform(
-                        -jnp.pi / 2 * jnp.ones(x_scaled.shape[1]),
-                        jnp.pi / 2 * jnp.ones(x_scaled.shape[1]),
+                    dist.MultivariateNormal(
+                        jnp.zeros(x_scaled.shape[1]),
+                        jnp.diag(jnp.ones(x_scaled.shape[1])),
                     ),
-                    TanTransform(),
+                    AffineTransform(0, 3),
                 ),
             )
         sigma_68_scaled = numpyro.sample("sigma_68_scaled", sigma_prior)
