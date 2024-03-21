@@ -70,11 +70,11 @@ def model_builder(
 ):
     # Set a default prior for nu
     if nu_prior is None:
-        nu_prior = dist.InverseGamma(3, 10)
+        nu_prior = dist.InverseGamma(4, 15)
 
     # Set a default prior for sigma
     if sigma_prior is None:
-        sigma_prior = dist.Gamma(2, 2)
+        sigma_prior = dist.Gamma(2, 4)
 
     # Define model
     def model(
