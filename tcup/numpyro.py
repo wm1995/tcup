@@ -115,7 +115,10 @@ def model_builder(
                     TanTransform(),
                 ),
             )
-        sigma = numpyro.sample("sigma_scaled", sigma_prior)
+        sigma_68_scaled = numpyro.sample("sigma_68_scaled", sigma_prior)
+        sigma = numpyro.deterministic(
+            "sigma_scaled", sigma_68_scaled / sigma_68(nu)
+        )
 
         if scaler is not None:
             unscaled = scaler.inv_transform_coeff(
