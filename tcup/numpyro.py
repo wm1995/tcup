@@ -67,6 +67,7 @@ def model_builder(
     nu_prior: Optional[dist.Distribution] = None,
     sigma_prior: Optional[dist.Distribution] = None,
     scaler=None,
+    ncup=False,
 ):
     # Set a default prior for nu
     if nu_prior is None:
@@ -135,13 +136,17 @@ def model_builder(
         # Linear regression model
         reparam_config = {"y_true": TransformReparam()}
         with numpyro.handlers.reparam(config=reparam_config):
-            tau = numpyro.sample(
-                "tau",
-                dist.Gamma(nu / 2, nu / 2),
-                sample_shape=y_scaled.shape,
-            )
             y_loc = alpha + jnp.dot(x_true, beta)
-            y_scale = sigma * jnp.power(tau, -0.5)
+
+            if ncup:
+                y_scale = sigma
+            else:
+                tau = numpyro.sample(
+                    "tau",
+                    dist.Gamma(nu / 2, nu / 2),
+                    sample_shape=y_scaled.shape,
+                )
+                y_scale = sigma * jnp.power(tau, -0.5)
             y_true = numpyro.sample(
                 "y_true",
                 dist.TransformedDistribution(
