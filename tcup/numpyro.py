@@ -116,10 +116,14 @@ def model_builder(
                     AffineTransform(0, 3),
                 ),
             )
+
         sigma_68_scaled = numpyro.sample("sigma_68_scaled", sigma_prior)
-        sigma = numpyro.deterministic(
-            "sigma_scaled", sigma_68_scaled / sigma_68(nu)
-        )
+        if ncup:
+            sigma = numpyro.deterministic("sigma_scaled", sigma_68_scaled)
+        else:
+            sigma = numpyro.deterministic(
+                "sigma_scaled", sigma_68_scaled / sigma_68(nu)
+            )
 
         if scaler is not None:
             unscaled = scaler.inv_transform_coeff(
