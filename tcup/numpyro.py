@@ -68,7 +68,16 @@ def model_builder(
     sigma_prior: Optional[dist.Distribution] = None,
     scaler=None,
     ncup=False,
+    fixed_nu=None,
 ):
+    # Check that fixed_nu and nu_prior are not both set
+    if nu_prior is not None and fixed_nu is not None:
+        raise ValueError("Cannot have a fixed nu model with a prior on nu")
+
+    # Check that fixed_nu and ncup are not both set
+    if ncup and fixed_nu is not None:
+        raise ValueError("Cannot have a fixed nu model with ncup")
+
     # Set a default prior for nu
     if nu_prior is None:
         nu_prior = dist.InverseGamma(4, 15)
@@ -83,11 +92,12 @@ def model_builder(
         y_scaled,
         cov_x_scaled,
         dy_scaled,
-        nu=None,
     ):
         # Prior on heavy-tailedness
-        if nu is None:
+        if fixed_nu is None:
             nu = numpyro.sample("nu", nu_prior)
+        else:
+            nu = fixed_nu
 
         x_true = numpyro.sample(
             "x_true", true_x_prior, sample_shape=(x_scaled.shape[0],)
@@ -133,9 +143,9 @@ def model_builder(
             numpyro.deterministic("beta", unscaled[1].reshape(beta.shape))
             numpyro.deterministic("sigma", unscaled[2])
             numpyro.deterministic("sigma_68", sigma_68(nu) * unscaled[2])
-        else:
-            numpyro.deterministic("sigma_68", sigma_68(nu) * sigma)
-        numpyro.deterministic("outlier_frac", outlier_frac(nu))
+
+        if not ncup and fixed_nu is None:
+            numpyro.deterministic("outlier_frac", outlier_frac(nu))
 
         # Linear regression model
         reparam_config = {"y_true": TransformReparam()}
@@ -243,7 +253,17 @@ def tcup(
     ) = scaler.transform(x, cov_x, y, dy)
 
     x_true_prior = xdgmm_prior(scaled_x, scaled_cov_x, seed)
-    tcup_model = model_builder(x_true_prior, scaler=scaler)
+
+    if model == "tcup":
+        numpyro_model = model_builder(x_true_prior, scaler=scaler)
+    elif model == "ncup":
+        numpyro_model = model_builder(x_true_prior, scaler=scaler, ncup=True)
+    elif model == "fixed":
+        numpyro_model = model_builder(
+            x_true_prior,
+            scaler=scaler,
+            fixed_nu=shape_param,
+        )
 
     # Setup random key
     if seed is None:
@@ -251,7 +271,7 @@ def tcup(
     rng_key = jax.random.PRNGKey(seed)
 
     # Set up NUTS kernel
-    kernel = numpyro.infer.NUTS(tcup_model)
+    kernel = numpyro.infer.NUTS(numpyro_model)
 
     # Set up sampler
     sampler_kwargs.setdefault("num_warmup", 1000)
@@ -274,7 +294,7 @@ def tcup(
 
     # Sample posterior predictive
     rng_key, rng_key_ = jax.random.split(rng_key)
-    post_pred = numpyro.infer.Predictive(tcup_model, samples)(
+    post_pred = numpyro.infer.Predictive(numpyro_model, samples)(
         rng_key_,
         x_scaled=scaled_x,
         y_scaled=scaled_y,
@@ -284,7 +304,7 @@ def tcup(
 
     # Sample prior
     rng_key, rng_key_ = jax.random.split(rng_key)
-    prior = numpyro.infer.Predictive(tcup_model, num_samples=prior_samples)(
+    prior = numpyro.infer.Predictive(numpyro_model, num_samples=prior_samples)(
         rng_key_,
         x_scaled=scaled_x,
         y_scaled=scaled_y,
