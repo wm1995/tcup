@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 import scipy.stats as sps
-from jax.config import config
+from jax import config
 
 from tcup.utils import normality, outlier_frac, peak_height, sigma_68, t_cdf
 

@@ -1,5 +1,5 @@
 import arviz as az
-from jax.config import config
+from jax import config
 
 import tcup
 

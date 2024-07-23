@@ -1,6 +1,6 @@
 import arviz as az
 import pytest
-from jax.config import config
+from jax import config
 
 from tcup.stan import tcup
 
