@@ -23,8 +23,13 @@ pystan = "^3.6.0"
 ruff = "^0.4.9"
 pytest = "^7.2.0"
 
-[tool.black]
+[tool.ruff]
 line-length = 79
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "W"]
+ignore = ["B028"]
+fixable = ["ALL"]
 
 [build-system]
 requires = ["poetry-core"]
