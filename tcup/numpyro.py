@@ -17,7 +17,7 @@ from numpyro.infer.reparam import TransformReparam
 
 
 from .preprocess import deconvolve
-from .scale import Scaler
+from .scale import Scaler, StandardScaler
 from .utils import outlier_frac, sigma_68
 
 
@@ -193,6 +193,7 @@ def tcup(
     seed: Optional[int] = None,
     prior_samples: Optional[int] = 1000,
     model_kwargs: Optional[dict] = None,
+    scaler_class: type[Scaler] = StandardScaler,
     **sampler_kwargs,
 ):
     if model not in ["tcup", "ncup", "fixed"]:
@@ -243,7 +244,7 @@ def tcup(
 
     if x.ndim == 1:
         x = x[:, np.newaxis]
-    scaler = Scaler(x, cov_x, y, dy)
+    scaler = scaler_class(x, cov_x, y, dy)
 
     (
         scaled_x,

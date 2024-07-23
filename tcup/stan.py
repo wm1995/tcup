@@ -8,7 +8,7 @@ from numpy.typing import ArrayLike
 import stan
 
 from .preprocess import deconvolve
-from .scale import Scaler
+from .scale import StandardScaler
 from .utils import outlier_frac, sigma_68
 
 
@@ -77,7 +77,7 @@ def _add_to_fit(
 
 
 def _reprocess_samples(
-    scaler: Scaler,
+    scaler: StandardScaler,
     fit: stan.fit.Fit,
 ):
     (_, draws, chains) = fit._draws.shape
@@ -184,7 +184,7 @@ def tcup(
 
     if x.ndim == 1:
         x = x[:, np.newaxis]
-    scaler = Scaler(x, cov_x, y, dy)
+    scaler = StandardScaler(x, cov_x, y, dy)
 
     (
         scaled_x,

@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from tcup.scale import Scaler
+from tcup.scale import StandardScaler
 
 ALPHA = 2
 BETA = np.array([1, -3])
@@ -42,13 +42,13 @@ def test_data_fixture(simple_linear_data):
     assert np.isclose(residuals.std(), SIGMA)
 
 
-def test_scaler(simple_linear_data):
+def test_standard_scaler(simple_linear_data):
     x = simple_linear_data["x"]
     dim_x = x.shape[1]
     cov_x = simple_linear_data["cov_x"]
     y = simple_linear_data["y"]
     dy = simple_linear_data["dy"]
-    scaler = Scaler(**simple_linear_data)
+    scaler = StandardScaler(**simple_linear_data)
     x_scaled, dx_scaled, y_scaled, dy_scaled = scaler.transform(
         **simple_linear_data
     )
@@ -79,7 +79,7 @@ def test_scaler(simple_linear_data):
 
 
 def test_inv_transform(simple_linear_data):
-    scaler = Scaler(**simple_linear_data)
+    scaler = StandardScaler(**simple_linear_data)
     scaled_data = scaler.transform(**simple_linear_data)
     x, cov_x, y, dy = scaler.inv_transform(*scaled_data)
     assert np.isclose(x, simple_linear_data["x"]).all()
@@ -89,7 +89,7 @@ def test_inv_transform(simple_linear_data):
 
 
 def test_transform_coeff(simple_linear_data):
-    scaler = Scaler(**simple_linear_data)
+    scaler = StandardScaler(**simple_linear_data)
     x_scaled, _, y_scaled, _ = scaler.transform(**simple_linear_data)
     A = np.append(x_scaled, np.ones(x_scaled.shape[0])[:, np.newaxis], axis=1)
     coeffs = np.linalg.lstsq(A, y_scaled, rcond=None)[0]

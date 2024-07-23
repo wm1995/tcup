@@ -1,7 +1,47 @@
+from abc import ABC, abstractmethod
 import jax.numpy as jnp
 
 
-class Scaler:
+class Scaler(ABC):
+    @abstractmethod
+    def __init__(self, x, cov_x, y, dy):
+        pass
+
+    @abstractmethod
+    def transform(self, x, cov_x, y, dy):
+        pass
+
+    @abstractmethod
+    def transform_coeff(self, alpha, beta, sigma):
+        pass
+
+    @abstractmethod
+    def inv_transform(self, x_scaled, cov_x_scaled, y_scaled, dy_scaled):
+        pass
+
+    @abstractmethod
+    def inv_transform_coeff(self, alpha_scaled, beta_scaled, sigma_scaled):
+        pass
+
+
+class NoScaler(Scaler):
+    def __init__(self, x, cov_x, y, dy):
+        pass
+
+    def transform(self, x, cov_x, y, dy):
+        return x, cov_x, y, dy
+
+    def transform_coeff(self, alpha, beta, sigma):
+        return alpha, beta, sigma
+
+    def inv_transform(self, x_scaled, cov_x_scaled, y_scaled, dy_scaled):
+        return x_scaled, cov_x_scaled, y_scaled, dy_scaled
+
+    def inv_transform_coeff(self, alpha_scaled, beta_scaled, sigma_scaled):
+        return alpha_scaled, beta_scaled, sigma_scaled
+
+
+class StandardScaler(Scaler):
     def __init__(self, x, cov_x, y, dy):
         self.x_mean = x.mean(axis=0)
         self.x_std = x.std(axis=0)
