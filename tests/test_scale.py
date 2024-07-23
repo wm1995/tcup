@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from tcup.scale import StandardScaler
 
 ALPHA = 2

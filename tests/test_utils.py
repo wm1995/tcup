@@ -1,8 +1,9 @@
-from jax.config import config
 import numpy as np
 import pytest
 import scipy.stats as sps
-from tcup.utils import peak_height, normality, outlier_frac, t_cdf, sigma_68
+from jax.config import config
+
+from tcup.utils import normality, outlier_frac, peak_height, sigma_68, t_cdf
 
 config.update("jax_enable_x64", True)
 

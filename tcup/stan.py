@@ -1,11 +1,11 @@
-from typing import Optional
 import warnings
+from typing import Optional
 
 import arviz as az
 import jinja2
 import numpy as np
-from numpy.typing import ArrayLike
 import stan
+from numpy.typing import ArrayLike
 
 from .preprocess import deconvolve
 from .scale import StandardScaler

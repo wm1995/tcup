@@ -1,5 +1,6 @@
 import arviz as az
 from jax.config import config
+
 import tcup
 
 config.update("jax_enable_x64", True)

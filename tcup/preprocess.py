@@ -1,4 +1,5 @@
 """Routines for pre-processing the data before fitting."""
+
 from xdgmm import XDGMM
 
 from .utils import suppress_output

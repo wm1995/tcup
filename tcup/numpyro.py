@@ -1,20 +1,19 @@
-from typing import Optional
 import warnings
+from typing import Optional
 
 import arviz as az
 import jax
 import jax.numpy as jnp
 import numpy as np
-from numpy.typing import ArrayLike
 import numpyro
 import numpyro.distributions as dist
+from numpy.typing import ArrayLike
 from numpyro.distributions import constraints
 from numpyro.distributions.transforms import (
-    ParameterFreeTransform,
     AffineTransform,
+    ParameterFreeTransform,
 )
 from numpyro.infer.reparam import TransformReparam
-
 
 from .preprocess import deconvolve
 from .scale import Scaler, StandardScaler
@@ -89,7 +88,7 @@ def model_builder(
 
     # Set a default prior for sigma
     if sigma_prior is None:
-        sigma_prior = dist.Gamma(2, 4)
+        sigma_prior = dist.Gamma(1.1, 5)
 
     # Define model
     def model(
@@ -118,7 +117,7 @@ def model_builder(
                 "alpha_scaled",
                 dist.TransformedDistribution(
                     dist.Normal(0, 1),
-                    AffineTransform(0, 3),
+                    AffineTransform(0, 2),
                 ),
             )
             beta = numpyro.sample(
@@ -128,7 +127,7 @@ def model_builder(
                         jnp.zeros(x_scaled.shape[1]),
                         jnp.diag(jnp.ones(x_scaled.shape[1])),
                     ),
-                    AffineTransform(0, 3),
+                    AffineTransform(0, 2),
                 ),
             )
 
@@ -141,7 +140,9 @@ def model_builder(
             )
 
         if scaler is not None:
-            unscaled = scaler.inv_transform_coeff(alpha, beta[:, jnp.newaxis], sigma)
+            unscaled = scaler.inv_transform_coeff(
+                alpha, beta[:, jnp.newaxis], sigma
+            )
             numpyro.deterministic("alpha", unscaled[0].reshape(alpha.shape))
             numpyro.deterministic("beta", unscaled[1].reshape(beta.shape))
             numpyro.deterministic("sigma", unscaled[2])
@@ -179,7 +180,9 @@ def model_builder(
                 dist.MultivariateNormal(x_true, cov_x_scaled),
                 obs=x_scaled,
             )
-            numpyro.sample("y_scaled", dist.Normal(y_true, dy_scaled), obs=y_scaled)
+            numpyro.sample(
+                "y_scaled", dist.Normal(y_true, dy_scaled), obs=y_scaled
+            )
         else:
             # Measure latent x and y values with error
             numpyro.sample(

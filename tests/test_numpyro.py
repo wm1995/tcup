@@ -1,13 +1,12 @@
-import pytest
-
 import arviz as az
 import jax
 import jax.numpy as jnp
+import pytest
+import scipy.stats as sps
 from numpyro.distributions import Normal
 from numpyro.infer import Predictive
-import scipy.stats as sps
-from tcup.numpyro import model_builder, tcup
 
+from tcup.numpyro import model_builder, tcup
 
 THRESHOLD = 1e-3  # Set the p-value threshold
 
