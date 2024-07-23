@@ -7,16 +7,16 @@ import numpy as np
 import stan
 from numpy.typing import ArrayLike
 
-from .preprocess import deconvolve
-from .scale import StandardScaler
-from .utils import outlier_frac, sigma_68
+from ..preprocess import deconvolve
+from ..scale import StandardScaler
+from ..utils import outlier_frac, sigma_68
 
 
 def _get_model_src(model, **model_kwargs):
     if model not in ["tcup", "fixed", "ncup"]:
         raise NotImplementedError(f"The model `{model}` could not be found.")
 
-    loader = jinja2.PackageLoader("tcup", "stan_models")
+    loader = jinja2.PackageLoader("tcup.stan", "src")
     env = jinja2.Environment(loader=loader)
     template = env.get_template("template.stan")
     src = template.render(model=model, **model_kwargs)
