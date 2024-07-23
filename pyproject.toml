@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tcup"
-version = "0.3.0"
+version = "0.6.0"
 description = ""
 authors = ["William Martin <30499074+wm1995@users.noreply.github.com>"]
 readme = "README.md"
@@ -13,7 +13,7 @@ xdgmm = {git = "https://github.com/tholoien/XDGMM.git"}
 jinja2 = "^3.1.2"
 
 [tool.poetry.group.numpyro.dependencies]
-numpyro = "^0.10.1"
+numpyro = "^0.13.2"
 
 [tool.poetry.group.pystan.dependencies]
 httpstan = "^4.9.0"
