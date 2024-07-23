@@ -69,6 +69,7 @@ def model_builder(
     scaler=None,
     ncup=False,
     fixed_nu=None,
+    normal_obs=True,
 ):
     # Check that fixed_nu and nu_prior are not both set
     if nu_prior is not None and fixed_nu is not None:
@@ -77,6 +78,10 @@ def model_builder(
     # Check that fixed_nu and ncup are not both set
     if ncup and fixed_nu is not None:
         raise ValueError("Cannot have a fixed nu model with ncup")
+
+    # Check that normal_obs is not set with ncup
+    if ncup and not normal_obs:
+        raise ValueError("Cannot have a non-normal obs model with ncup")
 
     # Set a default prior for nu
     if nu_prior is None:
@@ -89,14 +94,14 @@ def model_builder(
     # Define model
     def model(
         x_scaled,
-        y_scaled,
         cov_x_scaled,
         dy_scaled,
+        y_scaled=None,
     ):
         # Prior on heavy-tailedness
         if fixed_nu is None:
             nu = numpyro.sample("nu", nu_prior)
-        else:
+        elif not ncup:
             nu = fixed_nu
 
         x_true = numpyro.sample(
@@ -136,9 +141,7 @@ def model_builder(
             )
 
         if scaler is not None:
-            unscaled = scaler.inv_transform_coeff(
-                alpha, beta[:, jnp.newaxis], sigma
-            )
+            unscaled = scaler.inv_transform_coeff(alpha, beta[:, jnp.newaxis], sigma)
             numpyro.deterministic("alpha", unscaled[0].reshape(alpha.shape))
             numpyro.deterministic("beta", unscaled[1].reshape(beta.shape))
             numpyro.deterministic("sigma", unscaled[2])
@@ -158,7 +161,7 @@ def model_builder(
                 tau = numpyro.sample(
                     "tau",
                     dist.Gamma(nu / 2, nu / 2),
-                    sample_shape=y_scaled.shape,
+                    sample_shape=(x_scaled.shape[0],),
                 )
                 y_scale = sigma * jnp.power(tau, -0.5)
             y_true = numpyro.sample(
@@ -169,15 +172,24 @@ def model_builder(
                 ),
             )
 
-        # Measure latent x and y values with error
-        numpyro.sample(
-            "x_scaled",
-            dist.MultivariateNormal(x_true, cov_x_scaled),
-            obs=x_scaled,
-        )
-        numpyro.sample(
-            "y_scaled", dist.Normal(y_true, dy_scaled), obs=y_scaled
-        )
+        if normal_obs:
+            # Measure latent x and y values with error
+            numpyro.sample(
+                "x_scaled",
+                dist.MultivariateNormal(x_true, cov_x_scaled),
+                obs=x_scaled,
+            )
+            numpyro.sample("y_scaled", dist.Normal(y_true, dy_scaled), obs=y_scaled)
+        else:
+            # Measure latent x and y values with error
+            numpyro.sample(
+                "x_scaled",
+                dist.MultivariateStudentT(nu, x_true, cov_x_scaled),
+                obs=x_scaled,
+            )
+            numpyro.sample(
+                "y_scaled", dist.StudentT(nu, y_true, dy_scaled), obs=y_scaled
+            )
 
     return model
 
