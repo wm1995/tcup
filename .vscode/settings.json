@@ -1,4 +1,10 @@
 {
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        }
+    },
     "python.testing.pytestArgs": [
         "tests"
     ],
