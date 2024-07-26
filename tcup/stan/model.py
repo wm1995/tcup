@@ -8,7 +8,7 @@ import stan
 from numpy.typing import ArrayLike
 
 from ..preprocess import deconvolve
-from ..scale import StandardScaler
+from ..scale import Scaler, StandardScaler
 from ..utils import outlier_frac, sigma_68
 
 
@@ -77,7 +77,7 @@ def _add_to_fit(
 
 
 def _reprocess_samples(
-    scaler: StandardScaler,
+    scaler: Scaler,
     fit: stan.fit.Fit,
 ):
     (_, draws, chains) = fit._draws.shape
@@ -134,6 +134,7 @@ def tcup(
     shape_param: Optional[float] = None,
     seed: Optional[int] = None,
     model_kwargs: Optional[dict] = None,
+    scaler_class: type[Scaler] = StandardScaler,
     **sampler_kwargs,
 ):
     if model not in ["tcup", "ncup", "fixed"]:
@@ -184,7 +185,8 @@ def tcup(
 
     if x.ndim == 1:
         x = x[:, np.newaxis]
-    scaler = StandardScaler(x, cov_x, y, dy)
+
+    scaler = scaler_class(x, cov_x, y, dy)
 
     (
         scaled_x,
