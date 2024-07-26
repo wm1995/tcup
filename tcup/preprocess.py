@@ -1,15 +1,15 @@
 """Routines for pre-processing the data before fitting."""
 
-from xdgmm import XDGMM
+import contextlib
 
-from .utils import suppress_output
+from xdgmm import XDGMM
 
 
 def deconvolve(x, cov_x, n_components=None, random_state=None):
     xdgmm = XDGMM(random_state=random_state)
 
     if n_components is None:
-        with suppress_output():
+        with contextlib.redirect_stdout(None):
             _, optimal_n_comp, _ = xdgmm.bic_test(x, cov_x, range(1, 10))
         xdgmm.n_components = optimal_n_comp
     else:
