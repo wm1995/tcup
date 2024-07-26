@@ -259,6 +259,7 @@ def tcup(
 
     if x.ndim == 1:
         x = x[:, np.newaxis]
+
     scaler = scaler_class(x, cov_x, y, dy)
 
     (
