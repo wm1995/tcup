@@ -29,14 +29,14 @@ data {
 
 parameters {
     // True values
-    array[N] vector[D] true_x;   // Latent x values
+    array[N] vector[D] x_true;   // Latent x values
 
     // Regression coefficients
     real alpha_scaled;                  // Intercept
     vector[D] beta_scaled_tsfrm;              // x coefficients
     real<lower=0> sigma_scaled;
 
-    // true_y
+    // y_true
 {% if model == "ncup" %}
     array[N] real epsilon; // Scatter for each datapoint
 {% else %}
@@ -57,7 +57,7 @@ parameters {
 
 transformed parameters {
     // Transformed parameters
-    array[N] real true_y;
+    array[N] real y_true;
 
     vector[D] beta_scaled = tan(beta_scaled_tsfrm);
 
@@ -67,14 +67,14 @@ transformed parameters {
 
 {% if model == "ncup" %}
     for(n in 1:N){
-        true_y[n] = alpha_scaled + dot_product(beta_scaled, true_x[n]) + epsilon[n];
+        y_true[n] = alpha_scaled + dot_product(beta_scaled, x_true[n]) + epsilon[n];
     }
 {% else %}
     // Mixture model reparameterisation of t distribution
     array[N] real epsilon;
     for(n in 1:N){
         epsilon[n] = sigma_scaled * epsilon_tsfrm[n] / sqrt(tau_epsilon[n]);
-        true_y[n] = alpha_scaled + dot_product(beta_scaled, true_x[n]) + epsilon[n];
+        y_true[n] = alpha_scaled + dot_product(beta_scaled, x_true[n]) + epsilon[n];
     }
 {% endif %}
 }
@@ -95,15 +95,15 @@ model {
 
     // Model
     for(n in 1:N){
-        // Equivalent to true_y ~ student_t(nu, alpha_scaled + beta_scaled . true_x[n], sigma_scaled);
+        // Equivalent to y_true ~ student_t(nu, alpha_scaled + beta_scaled . x_true[n], sigma_scaled);
         epsilon_tsfrm[n] ~ std_normal();
         tau_epsilon[n] ~ gamma(half_nu, half_nu);
     }
 {% endif %}
     // Model
     for(n in 1:N){
-        x_scaled[n] ~ multi_normal(true_x[n], cov_x_scaled[n]);
-        y_scaled[n] ~ normal(true_y[n], dy_scaled[n]);
+        x_scaled[n] ~ multi_normal(x_true[n], cov_x_scaled[n]);
+        y_scaled[n] ~ normal(y_true[n], dy_scaled[n]);
     }
 
     // Prior
@@ -124,7 +124,7 @@ model {
     for (n in 1:N) {
         vector[K] lps = log_theta;
         for (k in 1:K) {
-            lps[k] += multi_normal_lpdf(true_x[n] | mu_mix[k], sigma_mix[k]);
+            lps[k] += multi_normal_lpdf(x_true[n] | mu_mix[k], sigma_mix[k]);
         }
         target += log_sum_exp(lps);
     }
