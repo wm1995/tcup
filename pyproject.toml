@@ -15,6 +15,7 @@ python = "^3.10"
 arviz = "^0.19.0"
 jax = "^0.4.23"
 numpy = "^1.26.3"
+numpyro = "^0.13.2"
 tensorflow-probability = {extras = ["jax"], version = "^0.19.0"}
 
 # XDGMM dependencies
@@ -24,12 +25,12 @@ astropy = "^6.1.2"
 astropy-iers-data = "^0.2024.7.22.0.34.13"
 pyerfa = "^2.0.1.4"
 
-[tool.poetry.group.numpyro.dependencies]
-numpyro = "^0.13.2"
+# Stan dependencies
+jinja2 = {version = "^3.1.2", optional = true}
+pystan = {version = "^3.6.0", optional = true}
 
-[tool.poetry.group.pystan.dependencies]
-jinja2 = "^3.1.2"
-pystan = "^3.6.0"
+[tool.poetry.extras]
+stan = ["jinja2", "pystan"]
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.4"
