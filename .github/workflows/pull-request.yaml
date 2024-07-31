@@ -15,6 +15,8 @@ jobs:
                 args: 'format --check'
     pytest:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-python@v5
@@ -25,3 +27,6 @@ jobs:
                 poetry lock
                 poetry install --all-extras --with dev
             - run: pytest tests/
+            - uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                commit_message: Update poetry lockfile
