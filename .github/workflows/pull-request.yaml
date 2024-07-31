@@ -22,5 +22,6 @@ jobs:
                 python-version: '3.10'
             - run: |
                 pip install poetry==1.3.1
+                poetry lock
                 poetry install --all-extras --with dev
             - run: pytest tests/
