@@ -13,7 +13,7 @@ def tcup(
     dx: Optional[ArrayLike] = None,
     cov_x: Optional[ArrayLike] = None,
     seed: Optional[int] = None,
-    backend: Optional[str] = "stan",
+    backend: Optional[str] = "numpyro",
     **backend_kwargs,
 ):
     match backend:
