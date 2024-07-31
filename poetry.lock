@@ -16,8 +16,8 @@ files = [
 name = "aiohappyeyeballs"
 version = "2.3.2"
 description = "Happy Eyeballs"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8,<4.0"
 files = [
     {file = "aiohappyeyeballs-2.3.2-py3-none-any.whl", hash = "sha256:903282fb08c8cfb3de356fd546b263248a477c99cb147e20a115e14ab942a4ae"},
@@ -28,8 +28,8 @@ files = [
 name = "aiohttp"
 version = "3.10.0"
 description = "Async http client/server framework (asyncio)"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "aiohttp-3.10.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:68ab608118e212f56feef44d4785aa90b713042da301f26338f36497b481cd79"},
@@ -126,8 +126,8 @@ speedups = ["Brotli", "aiodns (>=3.2.0)", "brotlicffi"]
 name = "aiosignal"
 version = "1.3.1"
 description = "aiosignal: a list of registered asynchronous callbacks"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},
@@ -141,8 +141,8 @@ frozenlist = ">=1.1.0"
 name = "appdirs"
 version = "1.4.4"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 files = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
@@ -270,8 +270,8 @@ test = ["hypothesis", "pytest", "pytest-remotedata"]
 name = "async-timeout"
 version = "4.0.3"
 description = "Timeout context manager for asyncio programs"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
@@ -282,8 +282,8 @@ files = [
 name = "attrs"
 version = "23.2.0"
 description = "Classes Without Boilerplate"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
@@ -314,8 +314,8 @@ files = [
 name = "clikit"
 version = "0.6.2"
 description = "CliKit is a group of utilities to build beautiful and testable command line interfaces."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "clikit-0.6.2-py2.py3-none-any.whl", hash = "sha256:71268e074e68082306e23d7369a7b99f824a0ef926e55ba2665e911f7208489e"},
@@ -343,7 +343,7 @@ files = [
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 files = [
@@ -419,8 +419,8 @@ test-no-images = ["pytest", "pytest-cov", "pytest-xdist", "wurlitzer"]
 name = "crashtest"
 version = "0.3.1"
 description = "Manage Python errors with ease"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6,<4.0"
 files = [
     {file = "crashtest-0.3.1-py3-none-any.whl", hash = "sha256:300f4b0825f57688b47b6d70c6a31de33512eb2fa1ac614f780939aa0cf91680"},
@@ -625,8 +625,8 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 name = "frozenlist"
 version = "1.4.1"
 description = "A list-like structure which implements collections.abc.MutableSequence"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "frozenlist-1.4.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f9aa1878d1083b276b0196f2dfbe00c9b7e752475ed3b682025ff20c1c1f51ac"},
@@ -777,8 +777,8 @@ numpy = ">=1.17.3"
 name = "httpstan"
 version = "4.13.0"
 description = "HTTP-based interface to Stan, a package for Bayesian inference."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "<4.0,>=3.10"
 files = [
     {file = "httpstan-4.13.0-cp310-cp310-macosx_13_0_x86_64.whl", hash = "sha256:d74077e482391586da9510847bd56cb7feb6fbed8b32bfc741c9067f1bb5cd17"},
@@ -816,8 +816,8 @@ license = ["ukkonen"]
 name = "idna"
 version = "3.7"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.5"
 files = [
     {file = "idna-3.7-py3-none-any.whl", hash = "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"},
@@ -907,8 +907,8 @@ scipy = [
 name = "jinja2"
 version = "3.1.4"
 description = "A very fast and expressive template engine."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "jinja2-3.1.4-py3-none-any.whl", hash = "sha256:bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d"},
@@ -1051,8 +1051,8 @@ files = [
 name = "markupsafe"
 version = "2.1.5"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "MarkupSafe-2.1.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:a17a92de5231666cfbe003f0e4b9b3a7ae3afb1ec2845aadc2bacc93ff85febc"},
@@ -1121,8 +1121,8 @@ files = [
 name = "marshmallow"
 version = "3.21.3"
 description = "A lightweight library for converting complex datatypes to and from native Python datatypes."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "marshmallow-3.21.3-py3-none-any.whl", hash = "sha256:86ce7fb914aa865001a4b2092c4c2872d13bc347f3d42673272cabfdbad386f1"},
@@ -1231,8 +1231,8 @@ dev = ["absl-py", "pyink", "pylint (>=2.6.0)", "pytest", "pytest-xdist"]
 name = "multidict"
 version = "6.0.5"
 description = "multidict implementation"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "multidict-6.0.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:228b644ae063c10e7f324ab1ab6b548bdf6f8b47f3ec234fef1093bc2735e5f9"},
@@ -1331,7 +1331,7 @@ files = [
 name = "multipledispatch"
 version = "1.0.0"
 description = "Multiple dispatch"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1401,7 +1401,7 @@ files = [
 name = "numpyro"
 version = "0.13.2"
 description = "Pyro PPL on NumPy"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1534,8 +1534,8 @@ xml = ["lxml (>=4.9.2)"]
 name = "pastel"
 version = "0.2.1"
 description = "Bring colors to your terminal."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "pastel-0.2.1-py2.py3-none-any.whl", hash = "sha256:4349225fcdf6c2bb34d483e523475de5bb04a5c10ef711263452cb37d7dd4364"},
@@ -1724,8 +1724,8 @@ test = ["pytest", "pytest-doctestplus (>=0.7)"]
 name = "pylev"
 version = "1.4.0"
 description = "A pure Python Levenshtein implementation that's not freaking GPL'd."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 files = [
     {file = "pylev-1.4.0-py2.py3-none-any.whl", hash = "sha256:7b2e2aa7b00e05bb3f7650eb506fc89f474f70493271a35c242d9a92188ad3dd"},
@@ -1751,8 +1751,8 @@ diagrams = ["jinja2", "railroad-diagrams"]
 name = "pysimdjson"
 version = "6.0.2"
 description = "simdjson bindings for python"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">3.5"
 files = [
     {file = "pysimdjson-6.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:b8f3839a72530106d52c0538ab9fca2c7555e7caa70388c48ac634f8963c3a62"},
@@ -1829,8 +1829,8 @@ test = ["coverage", "flake8", "numpy", "pytest", "pytest-benchmark"]
 name = "pystan"
 version = "3.10.0"
 description = "Python interface to Stan, a package for Bayesian inference"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "<4.0,>=3.10"
 files = [
     {file = "pystan-3.10.0-py3-none-any.whl", hash = "sha256:14d54cb708d9cf209cba03cd6f5493d484b0cb528bd5836f5c38d3fa0d2b343f"},
@@ -2156,7 +2156,7 @@ files = [
 name = "tqdm"
 version = "4.66.4"
 description = "Fast, Extensible Progress Meter"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2222,8 +2222,8 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 name = "webargs"
 version = "8.4.0"
 description = "Declarative parsing and validation of HTTP request objects, with built-in support for popular web frameworks, including Flask, Django, Bottle, Tornado, Pyramid, Falcon, and aiohttp."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "webargs-8.4.0-py3-none-any.whl", hash = "sha256:22324305fbca6a2c4cce1235280e8b56372fb3211a8dac2ac8ed1948315a6f53"},
@@ -2290,33 +2290,11 @@ numba = ["numba (>=0.55)"]
 test = ["hypothesis", "packaging", "pytest", "pytest-cov"]
 
 [[package]]
-name = "xdgmm"
-version = "1.0.9"
-description = ""
-category = "main"
-optional = false
-python-versions = "*"
-files = []
-develop = false
-
-[package.dependencies]
-astroML = "*"
-numpy = "*"
-scikit-learn = "*"
-scipy = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/tholoien/XDGMM.git"
-reference = "HEAD"
-resolved_reference = "70d0fde6bf6dc69861724bd2690bdcecd40b1556"
-
-[[package]]
 name = "yarl"
 version = "1.9.4"
 description = "Yet another URL library"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "yarl-1.9.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:a8c1df72eb746f4136fe9a2e72b0c9dc1da1cbd23b5372f94b5820ff8ae30e0e"},
@@ -2415,7 +2393,10 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[extras]
+stan = ["jinja2", "pystan"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "51d961bdab6d3cb5df4a43758c431379e919f6d816b4578e16f669ab5b247cf7"
+content-hash = "a234542d40328a2d11a1548a045bf104ecd28ece32c3a762a89008e9eaad7de0"

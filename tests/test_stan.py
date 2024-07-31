@@ -7,7 +7,10 @@ import scipy.stats as sps
 from jax import config
 
 from tcup.scale import NoScaler
-from tcup.stan import tcup
+
+# Import stan tcup only if available
+stan = pytest.importorskip("tcup.stan")
+tcup = stan.tcup
 
 config.update("jax_enable_x64", True)
 
