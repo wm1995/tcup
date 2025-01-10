@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tcup"
-version = "0.7.0"
+version = "0.7.1"
 description = "Robust Bayesian regression with measurement error"
 authors = ["William Martin <30499074+wm1995@users.noreply.github.com>"]
 readme = "README.md"
